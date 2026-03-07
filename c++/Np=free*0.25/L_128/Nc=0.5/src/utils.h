@@ -110,4 +110,12 @@ inline std::string generateFileName(int numHunters, int numPrey, int numObstacle
            "_SR_" + std::to_string(hunterSearchRadius) + ".dat";
 }
 
+inline std::string generateDirectoryName(int numObstacles) 
+{   
+    return "s_obs_" + std::to_string(numObstacles);
+}
+
+// Uso:
+
+
 #endif // UTILS_H

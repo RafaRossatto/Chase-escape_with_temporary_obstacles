@@ -8,6 +8,9 @@
 #include <fstream>
 #include <vector>
 #include <omp.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 /**
  * @file main.cpp
@@ -65,6 +68,16 @@ int main()
     const int numPrey = numFreeSites / 4;             /**< Prey occupy 1/4 of free space */
     const int numHunters = numHuntersValues[0];
 
+    // std::string dirName = generateDirectoryName(numObstacles); 
+
+    // // CRIA o diretório de fato
+    // if (!fs::exists(dirName)) {
+    //     fs::create_directory(dirName);
+    //     std::cout << "Diretório criado: " << dirName << std::endl;
+    // } else {
+    //     std::cout << "Diretório já existe: " << dirName << std::endl;
+    // }
+    
     // Vector to store results from all runs
     std::vector<RunResult> results(NUM_RUNS);
 

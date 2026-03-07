@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <algorithm> 
 #include <array> 
+#include <optional>
 
 /**
  * @brief Constructs a new CellLattice object
@@ -290,9 +291,118 @@ int CellLattice::countTargetsAround(int x, int y,
     return count;
 }
 
-/**
- * @brief Moves a cancer cell according to its behavior
- */
+// /**
+//  * @brief Moves a cancer cell according to its behavior
+//  */
+// void CellLattice::moveCancerCell(Cell& cell,
+//     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
+//     std::vector<Obstacle>& obstacles,
+//     std::mt19937& rng, bool checkCancer, int searchRadius)
+// {
+//     int x = cell.getPositionX();
+//     int y = cell.getPositionY();
+//     int newX = x, newY = y;
+
+//     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
+//     std::array<Direction, 4> shuffledDirections = directions;
+//     std::shuffle(shuffledDirections.begin(), shuffledDirections.end(), rng);
+
+//     // 1. Collect all adjacent hunters
+//     std::vector<std::pair<int, int>> adjacentHunters;
+
+//     for (Direction dir : shuffledDirections)
+//     {
+//         int adjX = x, adjY = y;
+//         cell.randomWalk(adjX, adjY, dir);
+//         for (const auto& hunter : normalCells)
+//         {
+//             if (hunter.getPositionX() == adjX && hunter.getPositionY() == adjY)
+//             {
+//                 adjacentHunters.emplace_back(adjX, adjY);
+//                 break;
+//             }
+//         }
+//     }
+
+//     // 2. If there are adjacent hunters → choose random one and flee to free position
+//     if (!adjacentHunters.empty())
+//     {
+//         std::shuffle(adjacentHunters.begin(), adjacentHunters.end(), rng);
+        
+//         // Try to flee to a free direction
+//         std::vector<Direction> freeDirections;
+//         for (Direction dir : shuffledDirections)
+//         {
+//             int tempX = x, tempY = y;
+//             cell.randomWalk(tempX, tempY, dir);
+
+//             if (!isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+//                 freeDirections.push_back(dir);
+//         }
+
+//         if (!freeDirections.empty())
+//         {
+//             std::shuffle(freeDirections.begin(), freeDirections.end(), rng);
+//             Direction fleeDirection = freeDirections.front();
+//             cell.randomWalk(newX, newY, fleeDirection);
+
+//             setGridValue(x, y, "L");
+//             cell.changePosition(newX, newY);
+//             setGridValue(newX, newY, "O");
+//         }
+//         return;
+//     }   
+
+//     // 3. If no adjacent hunter → density strategy
+//     std::vector<Cell> allCells;
+//     allCells.insert(allCells.end(), normalCells.begin(), normalCells.end());
+//     allCells.insert(allCells.end(), cancerCells.begin(), cancerCells.end());
+
+//     int currentDensity = countTargetsAround(x, y, allCells, {"N"}, searchRadius);
+//     int minDensity = currentDensity;
+//     std::vector<Direction> bestDirections;
+
+//     for (Direction dir : shuffledDirections)
+//     {
+//         int tempX = x, tempY = y;
+//         cell.randomWalk(tempX, tempY, dir);
+//         if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+//             continue;
+
+//         int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"N"}, searchRadius);
+//         if (neighborDensity < minDensity)
+//         {
+//             minDensity = neighborDensity;
+//             bestDirections.clear();
+//             bestDirections.push_back(dir);
+//         }
+//         else if (neighborDensity == minDensity)
+//         {
+//             bestDirections.push_back(dir);
+//         }
+//     }
+
+//     if (!bestDirections.empty())
+//     {
+//         std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
+//         Direction bestDir = bestDirections.front();
+//         cell.randomWalk(newX, newY, bestDir);
+//     }
+//     else
+//     {
+//         std::uniform_int_distribution<int> dirDist(0, 3);
+//         cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+//     }
+
+//     if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+//     {
+//         setGridValue(x, y, "L");
+//         cell.changePosition(newX, newY);
+//         setGridValue(newX, newY, "O");
+//     }
+// }
+
+
 void CellLattice::moveCancerCell(Cell& cell,
     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
     std::vector<Obstacle>& obstacles,
@@ -300,7 +410,9 @@ void CellLattice::moveCancerCell(Cell& cell,
 {
     int x = cell.getPositionX();
     int y = cell.getPositionY();
-    int newX = x, newY = y;
+    
+    // Variável para armazenar a nova posição apenas quando realmente for mover
+    std::optional<std::pair<int, int>> newPosition = std::nullopt;
 
     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
     std::array<Direction, 4> shuffledDirections = directions;
@@ -308,7 +420,6 @@ void CellLattice::moveCancerCell(Cell& cell,
 
     // 1. Collect all adjacent hunters
     std::vector<std::pair<int, int>> adjacentHunters;
-
     for (Direction dir : shuffledDirections)
     {
         int adjX = x, adjY = y;
@@ -328,7 +439,6 @@ void CellLattice::moveCancerCell(Cell& cell,
     {
         std::shuffle(adjacentHunters.begin(), adjacentHunters.end(), rng);
         
-        // Try to flee to a free direction
         std::vector<Direction> freeDirections;
         for (Direction dir : shuffledDirections)
         {
@@ -343,80 +453,215 @@ void CellLattice::moveCancerCell(Cell& cell,
         {
             std::shuffle(freeDirections.begin(), freeDirections.end(), rng);
             Direction fleeDirection = freeDirections.front();
+            
+            int newX = x, newY = y;
             cell.randomWalk(newX, newY, fleeDirection);
-
-            setGridValue(x, y, "L");
-            cell.changePosition(newX, newY);
-            setGridValue(newX, newY, "O");
+            newPosition = std::make_pair(newX, newY);
         }
-        return;
     }   
-
     // 3. If no adjacent hunter → density strategy
-    std::vector<Cell> allCells;
-    allCells.insert(allCells.end(), normalCells.begin(), normalCells.end());
-    allCells.insert(allCells.end(), cancerCells.begin(), cancerCells.end());
-
-    int currentDensity = countTargetsAround(x, y, allCells, {"N"}, searchRadius);
-    int minDensity = currentDensity;
-    std::vector<Direction> bestDirections;
-
-    for (Direction dir : shuffledDirections)
-    {
-        int tempX = x, tempY = y;
-        cell.randomWalk(tempX, tempY, dir);
-        if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
-            continue;
-
-        int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"N"}, searchRadius);
-        if (neighborDensity < minDensity)
-        {
-            minDensity = neighborDensity;
-            bestDirections.clear();
-            bestDirections.push_back(dir);
-        }
-        else if (neighborDensity == minDensity)
-        {
-            bestDirections.push_back(dir);
-        }
-    }
-
-    if (!bestDirections.empty())
-    {
-        std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
-        Direction bestDir = bestDirections.front();
-        cell.randomWalk(newX, newY, bestDir);
-    }
     else
     {
-        std::uniform_int_distribution<int> dirDist(0, 3);
-        cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+        std::vector<Cell> allCells;
+        allCells.insert(allCells.end(), normalCells.begin(), normalCells.end());
+        allCells.insert(allCells.end(), cancerCells.begin(), cancerCells.end());
+
+        int currentDensity = countTargetsAround(x, y, allCells, {"N"}, searchRadius);
+        int minDensity = currentDensity;
+        std::vector<Direction> bestDirections;
+
+        for (Direction dir : shuffledDirections)
+        {
+            int tempX = x, tempY = y;
+            cell.randomWalk(tempX, tempY, dir);
+            if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+                continue;
+
+            int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"N"}, searchRadius);
+            if (neighborDensity < minDensity)
+            {
+                minDensity = neighborDensity;
+                bestDirections.clear();
+                bestDirections.push_back(dir);
+            }
+            else if (neighborDensity == minDensity)
+            {
+                bestDirections.push_back(dir);
+            }
+        }
+
+        if (!bestDirections.empty())
+        {
+            std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
+            Direction bestDir = bestDirections.front();
+            
+            int newX = x, newY = y;
+            cell.randomWalk(newX, newY, bestDir);
+            newPosition = std::make_pair(newX, newY);
+        }
+        else
+        {
+            std::uniform_int_distribution<int> dirDist(0, 3);
+            Direction randomDir = static_cast<Direction>(dirDist(rng));
+            
+            int newX = x, newY = y;
+            cell.randomWalk(newX, newY, randomDir);
+            
+            if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+                newPosition = std::make_pair(newX, newY);
+        }
     }
 
-    if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+    // Move apenas se tivermos uma nova posição válida
+    if (newPosition.has_value())
     {
+        auto [newX, newY] = newPosition.value();
         setGridValue(x, y, "L");
         cell.changePosition(newX, newY);
         setGridValue(newX, newY, "O");
     }
 }
 
-/**
- * @brief Moves a normal cell according to its behavior
- */
+// /**
+//  * @brief Moves a normal cell according to its behavior
+//  */
+// int CellLattice::moveNormalCell(Cell& cell,
+//     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
+//     std::vector<Obstacle>& obstacles,
+//     std::mt19937& rng, bool checkCancer, int searchRadius)
+    
+// {
+//     int capturedId = -1;
+//     int x = cell.getPositionX();
+//     int y = cell.getPositionY();
+//     int newX = x, newY = y;
+    
+//     // Probability for intelligent movement (should be defined elsewhere)
+//     const double CT_PROBABILITY = 1.0; // Example value
+//     std::bernoulli_distribution dist(CT_PROBABILITY);
+//     bool intelligentMovement = dist(rng);
+
+//     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
+//     std::array<Direction, 4> shuffledDirections = directions;
+//     std::shuffle(shuffledDirections.begin(), shuffledDirections.end(), rng);
+
+//     if (intelligentMovement)
+//     {
+//         // 1. Check for adjacent prey
+//         std::vector<Direction> adjacentPrey;
+//         for (Direction dir : shuffledDirections)
+//         {
+//             int tempX = x, tempY = y;
+//             cell.randomWalk(tempX, tempY, dir);
+//             for (const auto& prey : cancerCells)
+//             {
+//                 if (prey.getPositionX() == tempX && prey.getPositionY() == tempY)
+//                 {
+//                     adjacentPrey.push_back(dir);
+//                     break;
+//                 }
+//             }
+//         }
+
+//         // 2. If there's adjacent prey → capture random one
+//         if (!adjacentPrey.empty())
+//         {
+//             std::shuffle(adjacentPrey.begin(), adjacentPrey.end(), rng);
+//             Direction dir = adjacentPrey.front();
+//             cell.randomWalk(newX, newY, dir);
+
+//             // Capture prey at that position
+//             for (auto it = cancerCells.begin(); it != cancerCells.end(); )
+//             {
+//                 if (it->getPositionX() == newX && it->getPositionY() == newY)
+//                 {
+//                     capturedId = it->getId(); 
+//                     setGridValue(it->getPositionX(), it->getPositionY(), "L");    
+//                     it = cancerCells.erase(it);
+//                 }
+//                 else
+//                 {
+//                     ++it;
+//                 }
+//             }
+
+//             setGridValue(x, y, "L");
+//             cell.changePosition(newX, newY);
+//             setGridValue(newX, newY, "N");
+//             return capturedId;
+//         }
+
+//         // 3. If no adjacent prey → follow density strategy
+//         std::vector<Cell> allCells;
+//         allCells.insert(allCells.end(), normalCells.begin(), normalCells.end());
+//         allCells.insert(allCells.end(), cancerCells.begin(), cancerCells.end());
+
+//         int currentDensity = countTargetsAround(x, y, allCells, {"O"}, searchRadius);
+//         int maxDensity = currentDensity;
+//         std::vector<Direction> bestDirections;
+
+//         for (Direction dir : shuffledDirections)
+//         {
+//             int tempX = x, tempY = y;
+//             cell.randomWalk(tempX, tempY, dir);
+//             if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+//                 continue;
+
+//             int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"O"}, searchRadius);
+//             if (neighborDensity > maxDensity)
+//             {
+//                 maxDensity = neighborDensity;
+//                 bestDirections.clear();
+//                 bestDirections.push_back(dir);
+//             }
+//             else if (neighborDensity == maxDensity)
+//             {
+//                 bestDirections.push_back(dir);
+//             }
+//         }
+
+//         if (!bestDirections.empty())
+//         {
+//             std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
+//             Direction bestDir = bestDirections.front();
+//             cell.randomWalk(newX, newY, bestDir);
+//         }
+//         else
+//         {
+//             std::uniform_int_distribution<int> dirDist(0, 3);
+//             cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+//         }
+//     }
+//     else
+//     {
+//         // Completely random movement
+//         std::uniform_int_distribution<int> dirDist(0, 3);
+//         cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+//     }
+
+//     if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+//     {
+//         setGridValue(x, y, "L");
+//         cell.changePosition(newX, newY);
+//         setGridValue(newX, newY, "N");
+//     }
+//     return capturedId;
+// }
+
 int CellLattice::moveNormalCell(Cell& cell,
     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
     std::vector<Obstacle>& obstacles,
     std::mt19937& rng, bool checkCancer, int searchRadius)
-    
 {
     int capturedId = -1;
     int x = cell.getPositionX();
     int y = cell.getPositionY();
-    int newX = x, newY = y;
     
-    // Probability for intelligent movement (should be defined elsewhere)
-    const double CT_PROBABILITY = 0.7; // Example value
+    // Usar optional para representar se houve movimento e para onde
+    std::optional<std::pair<int, int>> newPosition = std::nullopt;
+    
+    // Probability for intelligent movement
+    const double CT_PROBABILITY = 1.0;
     std::bernoulli_distribution dist(CT_PROBABILITY);
     bool intelligentMovement = dist(rng);
 
@@ -447,12 +692,15 @@ int CellLattice::moveNormalCell(Cell& cell,
         {
             std::shuffle(adjacentPrey.begin(), adjacentPrey.end(), rng);
             Direction dir = adjacentPrey.front();
-            cell.randomWalk(newX, newY, dir);
+            
+            int captureX = x, captureY = y;
+            cell.randomWalk(captureX, captureY, dir);
+            newPosition = std::make_pair(captureX, captureY);
 
             // Capture prey at that position
             for (auto it = cancerCells.begin(); it != cancerCells.end(); )
             {
-                if (it->getPositionX() == newX && it->getPositionY() == newY)
+                if (it->getPositionX() == captureX && it->getPositionY() == captureY)
                 {
                     capturedId = it->getId(); 
                     setGridValue(it->getPositionX(), it->getPositionY(), "L");    
@@ -463,10 +711,11 @@ int CellLattice::moveNormalCell(Cell& cell,
                     ++it;
                 }
             }
-
+            
+            // Como removemos a presa, a posição está livre - podemos mover
             setGridValue(x, y, "L");
-            cell.changePosition(newX, newY);
-            setGridValue(newX, newY, "N");
+            cell.changePosition(captureX, captureY);
+            setGridValue(captureX, captureY, "N");
             return capturedId;
         }
 
@@ -503,26 +752,45 @@ int CellLattice::moveNormalCell(Cell& cell,
         {
             std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
             Direction bestDir = bestDirections.front();
-            cell.randomWalk(newX, newY, bestDir);
+            
+            int moveX = x, moveY = y;
+            cell.randomWalk(moveX, moveY, bestDir);
+            newPosition = std::make_pair(moveX, moveY);
         }
         else
         {
             std::uniform_int_distribution<int> dirDist(0, 3);
-            cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+            Direction randomDir = static_cast<Direction>(dirDist(rng));
+            
+            int moveX = x, moveY = y;
+            cell.randomWalk(moveX, moveY, randomDir);
+            
+            // Verifica se a posição aleatória está livre
+            if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer))
+                newPosition = std::make_pair(moveX, moveY);
         }
     }
     else
     {
         // Completely random movement
         std::uniform_int_distribution<int> dirDist(0, 3);
-        cell.randomWalk(newX, newY, static_cast<Direction>(dirDist(rng)));
+        Direction randomDir = static_cast<Direction>(dirDist(rng));
+        
+        int moveX = x, moveY = y;
+        cell.randomWalk(moveX, moveY, randomDir);
+        
+        if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer))
+            newPosition = std::make_pair(moveX, moveY);
     }
 
-    if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+    // Move apenas se tivermos uma nova posição válida
+    if (newPosition.has_value())
     {
+        auto [newX, newY] = newPosition.value();
         setGridValue(x, y, "L");
         cell.changePosition(newX, newY);
         setGridValue(newX, newY, "N");
     }
+    
     return capturedId;
 }

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <fstream>
 
+
 /**
  * @brief Constructs a new Simulation object
  */
@@ -102,6 +103,7 @@ SimulationResult Simulation::runSingle(int run, std::mt19937& rng)
     std::string obsStr = "obs_" + ossObs.str();
 
     std::string filePath = "../" + obsStr + "/" + huntersStr + "/" + runStr + "/inaccessible_preys.txt";
+
     std::vector<Cell> localHunters, localPrey;
     std::vector<Obstacle> localObstacles = m_obstacles;
     
