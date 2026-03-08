@@ -2,7 +2,7 @@
 #include "utils.h"
 #include <iomanip>
 #include <fstream>
-
+#include "temp_obs.h"
 
 /**
  * @brief Constructs a new Simulation object
@@ -154,14 +154,42 @@ SimulationResult Simulation::runSingle(int run, std::mt19937& rng)
     }
 captureFile << "timestep,hunter_id,prey_id\n";
 
-
+    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
+    int value = 10; // Max life for a temp_obs
     // Main simulation loop
     while (time < 1.0e5) {
         // Stop condition: all prey are captured or inaccessible
+
+
+
+
+
+
+
+
         if (inaccessibleCount == static_cast<int>(localPrey.size())) {
             evolutionFile << time << "," << localPrey.size() << "\n";
             break;
         }
+
+
+                //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
+        if (!tempObstacles.empty()) {
+            for (auto it = tempObstacles.begin(); it != tempObstacles.end(); ) {
+                // Soma uma unidade ao life
+                it->addLife();
+                
+                // Verifica se life > value
+                if (it->getLife() > value) {
+                    // Apaga o elemento e atualiza o iterador
+                    it = tempObstacles.erase(it);
+                } else {
+                    // Avança para o próximo elemento
+                    ++it;
+                }
+            }
+        }
+
 
         // Process gridSize*gridSize movements
         for (int i = 0; i < gridSize * gridSize; ++i) {
