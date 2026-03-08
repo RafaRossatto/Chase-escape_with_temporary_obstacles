@@ -205,7 +205,7 @@ captureFile << "timestep,hunter_id,prey_id\n";
                     checkPrey = false;
                     int capturedPreyId = m_lattice.moveNormalCell(cell, localHunters, localPrey,
                         localObstacles, rng, checkPrey,
-                        m_hunterSearchRadius);
+                        m_hunterSearchRadius,tempObstacles);
 
                     if (capturedPreyId >= 0) 
                     {

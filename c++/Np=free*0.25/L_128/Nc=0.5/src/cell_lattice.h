@@ -228,7 +228,7 @@ class CellLattice
     int moveNormalCell(Cell& cell,
         std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
         std::vector<Obstacle>& obstacles,
-        std::mt19937& rng, bool checkCancer, int searchRadius);
+        std::mt19937& rng, bool checkCancer, int searchRadius, std::vector<temp_obs>& tempObstacles);
 };
 
 // Template implementations
