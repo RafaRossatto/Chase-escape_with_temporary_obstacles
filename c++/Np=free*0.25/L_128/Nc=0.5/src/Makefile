@@ -6,10 +6,10 @@ CXX = g++
 CXXFLAGS = -O2 -Wall -std=c++17 -fopenmp  # <-- adicionada flag -fopenmp
 
 # Fontes
-SRC = main.cpp cell.cpp cell_lattice.cpp obstacle.cpp config.cpp simulation.cpp
+SRC = main.cpp cell.cpp cell_lattice.cpp obstacle.cpp config.cpp simulation.cpp temp_obs.cpp
 
 # Cabeçalhos
-HEADERS = cell.h cell_lattice.h obstacle.h config.h utils.h simulation.cpp
+HEADERS = cell.h cell_lattice.h obstacle.h config.h utils.h simulation.h temp_obs.h
 
 # Objetos
 OBJ = $(SRC:.cpp=.o)
