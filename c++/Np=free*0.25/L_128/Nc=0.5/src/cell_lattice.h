@@ -180,7 +180,7 @@ class CellLattice
         const std::vector<Cell>& normalCells,
         const std::vector<Cell>& cancerCells,
         const std::vector<Obstacle>& obstacles,
-        bool checkCancer) const;
+        bool checkCancer, std::vector<temp_obs>& tempObstacles) const;
 ;
 
     /**

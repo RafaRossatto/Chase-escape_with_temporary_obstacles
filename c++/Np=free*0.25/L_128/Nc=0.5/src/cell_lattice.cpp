@@ -196,7 +196,7 @@ bool CellLattice::isOccupied(int x, int y,
     const std::vector<Cell>& normalCells,
     const std::vector<Cell>& cancerCells,
     const std::vector<Obstacle>& obstacles,
-    bool checkCancer) const
+    bool checkCancer, std::vector<temp_obs>& tempObstacles) const
 {
     for (const auto& cell : normalCells) 
     {
@@ -220,6 +220,15 @@ bool CellLattice::isOccupied(int x, int y,
     for (const auto& obs : obstacles) 
     {
         if (obs.getPositionX() == x && obs.getPositionY() == y) 
+        {
+            return true;
+        }
+    }
+
+
+    for (const auto& t_obs : tempObstacles) 
+    {
+        if (t_obs.getPositionX() == x && t_obs.getPositionY() == y) 
         {
             return true;
         }
@@ -446,7 +455,7 @@ void CellLattice::moveCancerCell(Cell& cell,
             int tempX = x, tempY = y;
             cell.randomWalk(tempX, tempY, dir);
 
-            if (!isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+            if (!isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
                 freeDirections.push_back(dir);
         }
 
@@ -475,7 +484,7 @@ void CellLattice::moveCancerCell(Cell& cell,
         {
             int tempX = x, tempY = y;
             cell.randomWalk(tempX, tempY, dir);
-            if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+            if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
                 continue;
 
             int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"N"}, searchRadius);
@@ -508,7 +517,7 @@ void CellLattice::moveCancerCell(Cell& cell,
             int newX = x, newY = y;
             cell.randomWalk(newX, newY, randomDir);
             
-            if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer))
+            if (!isOccupied(newX, newY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
                 newPosition = std::make_pair(newX, newY);
         }
     }
@@ -738,7 +747,7 @@ int CellLattice::moveNormalCell(Cell& cell,
         {
             int tempX = x, tempY = y;
             cell.randomWalk(tempX, tempY, dir);
-            if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer))
+            if (isOccupied(tempX, tempY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
                 continue;
 
             int neighborDensity = countTargetsAround(tempX, tempY, allCells, {"O"}, searchRadius);
@@ -772,7 +781,7 @@ int CellLattice::moveNormalCell(Cell& cell,
             cell.randomWalk(moveX, moveY, randomDir);
             
             // Verifica se a posição aleatória está livre
-            if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer))
+            if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
                 newPosition = std::make_pair(moveX, moveY);
         }
     }
@@ -785,7 +794,7 @@ int CellLattice::moveNormalCell(Cell& cell,
         int moveX = x, moveY = y;
         cell.randomWalk(moveX, moveY, randomDir);
         
-        if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer))
+        if (!isOccupied(moveX, moveY, normalCells, cancerCells, obstacles, checkCancer,tempObstacles))
             newPosition = std::make_pair(moveX, moveY);
     }
 
