@@ -224,7 +224,7 @@ captureFile << "timestep,hunter_id,prey_id\n";
                     if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
                         checkPrey = true;
                         m_lattice.moveCancerCell(cell, localHunters, localPrey, localObstacles, 
-                                               rng, checkPrey, m_preySearchRadius);
+                                               rng, checkPrey, m_preySearchRadius, tempObstacles);
                         break;
                     }
                 }

@@ -3,6 +3,7 @@
 #include <algorithm> 
 #include <array> 
 #include <optional>
+#include "temp_obs.h"
 
 /**
  * @brief Constructs a new CellLattice object
@@ -406,7 +407,7 @@ int CellLattice::countTargetsAround(int x, int y,
 void CellLattice::moveCancerCell(Cell& cell,
     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
     std::vector<Obstacle>& obstacles,
-    std::mt19937& rng, bool checkCancer, int searchRadius)
+    std::mt19937& rng, bool checkCancer, int searchRadius, std::vector<temp_obs>& tempObstacles)
 {
     int x = cell.getPositionX();
     int y = cell.getPositionY();

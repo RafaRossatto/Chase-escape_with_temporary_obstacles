@@ -12,6 +12,7 @@
 #include <algorithm> 
 #include <random>            // for std::mt19937
 #include "obstacle.h"        // for Obstacle class
+#include "temp_obs.h"
 
 class Cell;
 
@@ -211,7 +212,7 @@ class CellLattice
     void moveCancerCell(Cell& cell,
         std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
         std::vector<Obstacle>& obstacles,
-        std::mt19937& rng, bool checkCancer, int searchRadius);
+        std::mt19937& rng, bool checkCancer, int searchRadius, std::vector<temp_obs>& tempObstacles);
                     
     /**
      * @brief Moves a normal cell (good cell) according to its behavior
