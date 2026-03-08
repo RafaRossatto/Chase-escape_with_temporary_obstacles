@@ -520,6 +520,11 @@ void CellLattice::moveCancerCell(Cell& cell,
         setGridValue(x, y, "L");
         cell.changePosition(newX, newY);
         setGridValue(newX, newY, "O");
+
+            tempObstacles.emplace_back("T", 
+                               tempObstacles.size() + 1,
+                               x, 
+                               y);
     }
 }
 
