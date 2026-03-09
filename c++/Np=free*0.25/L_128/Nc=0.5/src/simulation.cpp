@@ -248,7 +248,7 @@ captureFile << "timestep,hunter_id,prey_id\n";
     }
 
     // Save final positions
-    saveCurrentPositions(time, localPrey, localHunters);
+   // saveCurrentPositions(time, localPrey, localHunters);
     
     evolutionFile.close();
     
