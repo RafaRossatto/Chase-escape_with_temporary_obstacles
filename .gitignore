@@ -3,3 +3,6 @@
 
 # Ignorar todos os arquivos .csv
 *.csv
+
+# Ignorar todos os arquivos .xyz
+*.xyz
