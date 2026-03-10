@@ -6,3 +6,11 @@
 
 # Ignorar todos os arquivos .xyz
 *.xyz
+
+# Ambientes virtuais
+venv/
+env/
+.env
+venv/*
+__pycache__/
+*.pyc
