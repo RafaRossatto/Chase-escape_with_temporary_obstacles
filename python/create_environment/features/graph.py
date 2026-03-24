@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 import csv
+import os
 
 class VonNeumannGraph:
     """Classe para criar um grafo de von Neumann (4-vizinhos) a partir de um grid."""
@@ -93,19 +94,64 @@ class VonNeumannGraph:
         num_chasers = int(fracao_escapers * num_escapers)
         return num_chasers / total_vertices
     
+    # def salvar_posicoes_csv(self, escapers: dict, chasers: dict, prefixo: str = "posicoes", 
+    #                         seed: int = None):
+    #     """
+    #     Salva as posições dos escapers e chasers em arquivos CSV e a seed em um arquivo separado.
+        
+    #     Args:
+    #         escapers: Dicionário de escapers {posicao: id}
+    #         chasers: Dicionário de chasers {posicao: id}
+    #         prefixo: Prefixo para os nomes dos arquivos
+    #         seed: Seed usada na simulação
+    #     """
+    #     # Salva escapers
+    #     with open(f"{prefixo}_escapers.csv", 'w', newline='') as arquivo:
+    #         escritor = csv.writer(arquivo)
+    #         escritor.writerow(['x', 'y', 'id'])
+            
+    #         for (x, y), id_agente in escapers.items():
+    #             escritor.writerow([x, y, id_agente])
+        
+    #     # Salva chasers
+    #     with open(f"{prefixo}_chasers.csv", 'w', newline='') as arquivo:
+    #         escritor = csv.writer(arquivo)
+    #         escritor.writerow(['x', 'y', 'id'])
+            
+    #         for (x, y), id_agente in chasers.items():
+    #             escritor.writerow([x, y, id_agente])
+        
+    #     # Salva seed
+    #     with open(f"{prefixo}_seed.txt", 'w') as arquivo:
+    #         arquivo.write(f"Seed: {seed}")
+        
+    #     print(f"Arquivos salvos: {prefixo}_escapers.csv, {prefixo}_chasers.csv e {prefixo}_seed.txt")
+   
     def salvar_posicoes_csv(self, escapers: dict, chasers: dict, prefixo: str = "posicoes", 
-                            seed: int = None):
+                                seed: int = None):
         """
         Salva as posições dos escapers e chasers em arquivos CSV e a seed em um arquivo separado.
+        Os arquivos são salvos no diretório ../../data/data_environment/[prefixo]/
         
         Args:
             escapers: Dicionário de escapers {posicao: id}
             chasers: Dicionário de chasers {posicao: id}
-            prefixo: Prefixo para os nomes dos arquivos
+            prefixo: Prefixo para os nomes dos arquivos (também usado como nome da pasta)
             seed: Seed usada na simulação
         """
+        # Define o diretório base com o prefixo como subpasta
+        diretorio_base = f"../../data/data_environment/{prefixo}"
+        
+        # Cria o diretório se não existir
+        os.makedirs(diretorio_base, exist_ok=True)
+        
+        # Caminhos completos dos arquivos (agora dentro da pasta do prefixo)
+        caminho_escapers = os.path.join(diretorio_base, f"escapers.csv")
+        caminho_chasers = os.path.join(diretorio_base, f"chasers.csv")
+        caminho_seed = os.path.join(diretorio_base, f"seed.txt")
+        
         # Salva escapers
-        with open(f"{prefixo}_escapers.csv", 'w', newline='') as arquivo:
+        with open(caminho_escapers, 'w', newline='') as arquivo:
             escritor = csv.writer(arquivo)
             escritor.writerow(['x', 'y', 'id'])
             
@@ -113,7 +159,7 @@ class VonNeumannGraph:
                 escritor.writerow([x, y, id_agente])
         
         # Salva chasers
-        with open(f"{prefixo}_chasers.csv", 'w', newline='') as arquivo:
+        with open(caminho_chasers, 'w', newline='') as arquivo:
             escritor = csv.writer(arquivo)
             escritor.writerow(['x', 'y', 'id'])
             
@@ -121,7 +167,10 @@ class VonNeumannGraph:
                 escritor.writerow([x, y, id_agente])
         
         # Salva seed
-        with open(f"{prefixo}_seed.txt", 'w') as arquivo:
+        with open(caminho_seed, 'w') as arquivo:
             arquivo.write(f"Seed: {seed}")
         
-        print(f"Arquivos salvos: {prefixo}_escapers.csv, {prefixo}_chasers.csv e {prefixo}_seed.txt")
+        print(f"Arquivos salvos em: {diretorio_base}/")
+        print(f"  - escapers.csv")
+        print(f"  - chasers.csv")
+        print(f"  - seed.txt")
