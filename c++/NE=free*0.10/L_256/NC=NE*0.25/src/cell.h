@@ -3,6 +3,7 @@
 #include <string>
 #include "cell_lattice.h"
 #include <limits>
+#include <vector>
 class CellLattice;
 
 
@@ -53,6 +54,32 @@ class Cell
          * @param move Direction of movement
          */
         void randomWalk(int& x, int& y, Direction move);
+
+
+
+
+
+
+
+
+
+       // Método estático para carregar células de um arquivo CSV
+    static std::vector<Cell> loadFromCSV(const std::string& filename, const std::string& type);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /**
          * @brief Changes the cell's position with boundary validation

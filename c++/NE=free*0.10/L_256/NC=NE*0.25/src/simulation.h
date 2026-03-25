@@ -20,6 +20,7 @@ struct TrajectoryData
     std::vector<double> timesteps;
     std::vector<std::vector<std::pair<int, int>>> preyPositions;   // [timestep][cell](x,y)
     std::vector<std::vector<std::pair<int, int>>> hunterPositions; // [timestep][cell](x,y)
+    std::vector<std::vector<std::pair<int, int>>> temp_obst_Positions; // [timestep][cell](x,y)
 };
 
 /**
@@ -61,7 +62,8 @@ private:
      * @param prey Vector of prey cells
      * @param hunters Vector of hunter cells
      */
-    void saveCurrentPositions(double time, const std::vector<Cell>& prey, const std::vector<Cell>& hunters);
+    void saveCurrentPositions(double time, const std::vector<Cell>& prey, 
+        const std::vector<Cell>& hunters, const std::vector<temp_obs>& t_obs);
 
 public:
     /**

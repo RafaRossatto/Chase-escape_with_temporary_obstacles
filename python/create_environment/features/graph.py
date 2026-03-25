@@ -46,38 +46,93 @@ class VonNeumannGraph:
         """Retorna o número total de arestas."""
         return self.G.number_of_edges()
     
-    def posicionar_agentes(self, fracao: float, seed: int = None, flag: str = "agente") -> dict:
+    # def posicionar_agentes(self, fracao: float, seed: int = None, flag: str = "agente") -> dict:
+    #     """
+    #     Posiciona agentes aleatoriamente nos vértices do grafo.
+        
+    #     Args:
+    #         fracao: Fração de vértices que receberão agentes (entre 0 e 1)
+    #         seed: Semente para o gerador de números aleatórios (opcional)
+    #         flag: Nome/flag para identificar os agentes
+            
+    #     Returns:
+    #         dict: Dicionário com as posições dos agentes {posicao: flag_id}
+    #     """
+    #     # Configura a semente
+    #     if seed is not None:
+    #         random.seed(seed)
+        
+    #     # Obtém todos os vértices
+    #     vertices = list(self.G.nodes())
+    #     total_vertices = len(vertices)
+        
+    #     # Calcula número de agentes
+    #     num_agentes = int(total_vertices * fracao)
+        
+    #     # Seleciona vértices aleatórios
+    #     vertices_escolhidos = random.sample(vertices, num_agentes)
+        
+    #     # Cria dicionário de agentes com a flag
+    #     self.agentes = {}
+    #     for i, vertice in enumerate(vertices_escolhidos):
+    #         self.agentes[vertice] = f"{i}"
+        
+    #     return self.agentes
+
+
+
+
+
+
+    def posicionar_agentes(self, fracao: float, seed: int = None, 
+                                         flag: str = "agente", posicoes_ocupadas: set = None) -> dict:
         """
-        Posiciona agentes aleatoriamente nos vértices do grafo.
+        Posiciona agentes aleatoriamente em vértices não ocupados.
         
         Args:
-            fracao: Fração de vértices que receberão agentes (entre 0 e 1)
-            seed: Semente para o gerador de números aleatórios (opcional)
+            fracao: Fração de vértices disponíveis que receberão agentes
+            seed: Semente para o gerador de números aleatórios
             flag: Nome/flag para identificar os agentes
+            posicoes_ocupadas: Conjunto de posições já ocupadas
             
         Returns:
-            dict: Dicionário com as posições dos agentes {posicao: flag_id}
+            dict: Dicionário com as posições dos agentes
         """
-        # Configura a semente
         if seed is not None:
             random.seed(seed)
         
-        # Obtém todos os vértices
-        vertices = list(self.G.nodes())
-        total_vertices = len(vertices)
+        # Obtém vértices não ocupados
+        todos_vertices = list(self.G.nodes())
+        if posicoes_ocupadas:
+            vertices_disponiveis = [v for v in todos_vertices if v not in posicoes_ocupadas]
+        else:
+            vertices_disponiveis = todos_vertices
         
-        # Calcula número de agentes
-        num_agentes = int(total_vertices * fracao)
+        # Calcula número de agentes baseado nos vértices disponíveis
+        num_agentes = int(len(vertices_disponiveis) * fracao)
+        
+        if num_agentes == 0:
+            return {}
         
         # Seleciona vértices aleatórios
-        vertices_escolhidos = random.sample(vertices, num_agentes)
+        vertices_escolhidos = random.sample(vertices_disponiveis, num_agentes)
         
-        # Cria dicionário de agentes com a flag
-        self.agentes = {}
+        # Cria dicionário de agentes
+        agentes = {}
         for i, vertice in enumerate(vertices_escolhidos):
-            self.agentes[vertice] = f"{i}"
+            agentes[vertice] = f"{i}"
         
-        return self.agentes
+        return agentes
+
+
+
+
+
+
+
+
+
+
 
     def calcular_fracao_para_chasers(self, num_escapers: int, fracao_escapers: float) -> float:
         """

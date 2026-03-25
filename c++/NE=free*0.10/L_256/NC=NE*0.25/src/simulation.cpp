@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <fstream>
 #include "temp_obs.h"
+#include "cell_lattice.h"
 
 /**
  * @brief Constructs a new Simulation object
@@ -25,7 +26,8 @@ Simulation::Simulation(CellLattice& lattice, int numHunters, int numPrey, int nu
 /**
  * @brief Saves current positions to trajectory data
  */
-void Simulation::saveCurrentPositions(double time, const std::vector<Cell>& prey, const std::vector<Cell>& hunters) 
+void Simulation::saveCurrentPositions(double time, const std::vector<Cell>& prey, 
+    const std::vector<Cell>& hunters, const std::vector<temp_obs>& t_obs) 
 {
     // Save timestep
     m_trajectoryData.timesteps.push_back(time);
@@ -43,6 +45,13 @@ void Simulation::saveCurrentPositions(double time, const std::vector<Cell>& prey
         currentHunterPositions.emplace_back(h.getPositionX(), h.getPositionY());
     }
     m_trajectoryData.hunterPositions.push_back(currentHunterPositions);
+
+    // Save temporary_obstacles positions
+    std::vector<std::pair<int, int>> current_temp_obs_Positions;
+    for (const auto& temp : t_obs) {
+        current_temp_obs_Positions.emplace_back(temp.getPositionX(), temp.getPositionY());
+    }
+    m_trajectoryData.temp_obst_Positions.push_back(current_temp_obs_Positions);
 }
 
 /**
@@ -79,6 +88,21 @@ void Simulation::saveTrajectoryData(int run) const
         }
         hunterFile.close();
     }
+
+        // Save temporary obstacels positoins corrigir aqui
+    std::ofstream temp_obs_File(m_fileName + "_run_" + std::to_string(run) + "_temp_obs_trajectories.csv");
+     if (temp_obs_File.is_open()) {
+         temp_obs_File << "timestep,cell_id,x,y\n";
+         for (size_t t = 0; t < m_trajectoryData.timesteps.size(); ++t) {
+             for (size_t c = 0; c < m_trajectoryData.temp_obst_Positions[t].size(); ++c) {
+                 temp_obs_File << m_trajectoryData.timesteps[t] << ","
+                            << c << ","
+                            << m_trajectoryData.temp_obst_Positions[t][c].first << ","
+                            << m_trajectoryData.temp_obst_Positions[t][c].second << "\n";
+             }
+         }
+         temp_obs_File.close();
+     }
 }
 
 /**
@@ -134,7 +158,11 @@ SimulationResult Simulation::runSingle(int run, std::mt19937& rng)
     double nextRecordingTime = recordingInterval;
     bool checkPrey;
 
-    saveCurrentPositions(time, localPrey, localHunters);
+
+    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
+    int value = 10; // Max life for a temp_obs
+
+    saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
 
     // Evolution file for prey count
     std::ofstream evolutionFile(m_fileName + "_run_" + std::to_string(run) + "_prey_per_step.csv");
@@ -154,17 +182,9 @@ SimulationResult Simulation::runSingle(int run, std::mt19937& rng)
     }
 captureFile << "timestep,hunter_id,prey_id\n";
 
-    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
-    int value = 10; // Max life for a temp_obs
     // Main simulation loop
     while (time < 1.0e5) {
         // Stop condition: all prey are captured or inaccessible
-
-
-
-
-
-
 
 
         if (inaccessibleCount == static_cast<int>(localPrey.size())) {
@@ -235,7 +255,7 @@ captureFile << "timestep,hunter_id,prey_id\n";
         if (time >= nextRecordingTime) {
             evolutionFile << time << "," << localPrey.size() << "\n";
             //  Save positions at recording interval
-            saveCurrentPositions(time, localPrey, localHunters);
+            saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
             nextRecordingTime += recordingInterval;
         }
 
