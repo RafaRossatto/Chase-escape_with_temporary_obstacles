@@ -73,119 +73,74 @@ double CellLattice::calculateDistance(int x1, int y1, int x2, int y2) const
 /**
  * @brief Places objects on the grid from files
  */
-bool CellLattice::placeObjects(std::vector<Obstacle>& obstacles,
-    std::vector<Cell>& normalCells,
-    std::vector<Cell>& cancerCells,
-    int numObstacles, int numNormal, int numCancer,
-    std::mt19937& rng, int searchRadiusNormal, int searchRadiusCancer, int run)
+void CellLattice::placeObjects(std::vector<Cell>& chasers, std::vector<Cell>& escapers)
 {
-    // Format strings for file naming
-    std::ostringstream ossNormal;
-    ossNormal << std::setw(2) << std::setfill('0') << numNormal;
-    std::string normalStr = "nC_" + ossNormal.str();
-
-    std::ostringstream ossRun;
-    ossRun << std::setw(2) << std::setfill('0') << run;
-    std::string runStr = "run_" + ossRun.str();
-
-    std::ostringstream ossObs;
-    ossObs << std::setw(2) << std::setfill('0') << numObstacles;
-    std::string obsStr = "obs_" + ossObs.str();
-
-    // Load obstacles
-    // if (numObstacles > 0)
-    // {
-    //     std::string filePath = "../" + obsStr + "/" + normalStr + "/" + runStr + "/obstacules.txt";
-    //     std::ifstream file(filePath);
-    //     if (!file.is_open()) 
-    //     {
-    //         std::cerr << "Error opening file: " << filePath << std::endl;
-    //         return false;
-    //     }
-
-    //     int x, y;
-    //     int id = 1;
-    //     while (file >> x >> y) 
-    //     {
-    //         if (x < 0 || x >= m_width || y < 0 || y >= m_height) 
-    //         {
-    //             std::cerr << "Invalid position in file: (" << x << ", " << y << ")\n";
-    //             continue;
-    //         }
-
-    //         Obstacle obstacle("C", id++, x, y);
-    //         if (!generalOverlap(obstacle, obstacles, normalCells, cancerCells)) 
-    //         {
-    //             obstacles.push_back(obstacle);
-    //             setGridValue(x, y, "C");
-    //         }
-    //     }
-    //     file.close();
-    // }
-
-    // Load normal cells (chasers)
+    // Posiciona células normais (chasers)
+    for (auto& cell : chasers) 
     {
-        std::string filePath = "../" + obsStr + "/" + normalStr + "/" + runStr + "/chasers.txt";
-        std::ifstream file(filePath);
-        if (!file.is_open()) 
-        {
-            std::cerr << "Error opening file: " << filePath << std::endl;
-            return false;
-        }
+        int x = cell.getPositionX();
+        int y = cell.getPositionY();
         
-        int x, y;
-        int id = 1;
-        while (file >> x >> y) 
+        if (x >= 0 && x < m_width && y >= 0 && y < m_height) 
         {
-            if (x < 0 || x >= m_width || y < 0 || y >= m_height) 
-            {
-                std::cerr << "Invalid position in file: (" << x << ", " << y << ")\n";
-                continue;
-            }
-            
-            Cell candidate("N", id++, x, y);
-            if (!generalOverlap(candidate, obstacles, normalCells, cancerCells)) 
-            {
-                normalCells.push_back(candidate);
-                setGridValue(x, y, "N");
-            }
+            setGridValue(x, y, "N");
         }
-        file.close();
-    }
-
-    // Load cancer cells (escapers)
-    {
-        std::string filePath = "../" + obsStr + "/" + normalStr + "/" + runStr + "/escapers.txt";
-        std::ifstream file(filePath);
-        if (!file.is_open()) 
+        else 
         {
-            std::cerr << "Error opening file: " << filePath << std::endl;
-            return false;
+            std::cerr << "Invalid position for normal cell ID " << cell.getId() 
+                      << ": (" << x << ", " << y << ")\n";
         }
-        
-        int x, y;
-        int id = 1;
-        while (file >> x >> y) 
-        {
-            if (x < 0 || x >= m_width || y < 0 || y >= m_height) 
-            {
-                std::cerr << "Invalid position in file: (" << x << ", " << y << ")\n";
-                continue;
-            }
-            
-            Cell candidate("O", id++, x, y);
-            if (!generalOverlap(candidate, obstacles, normalCells, cancerCells)) 
-            {
-                cancerCells.push_back(candidate);
-                setGridValue(x, y, "O");
-            }
-        }
-        file.close();
     }
     
-    return obstacles.size() == static_cast<size_t>(numObstacles) &&
-           normalCells.size() == static_cast<size_t>(numNormal) &&
-           cancerCells.size() == static_cast<size_t>(numCancer);
+    // Posiciona células cancerígenas (escapers)
+    for (auto& cell : escapers) 
+    {
+        int x = cell.getPositionX();
+        int y = cell.getPositionY();
+        
+        if (x >= 0 && x < m_width && y >= 0 && y < m_height) 
+        {
+            setGridValue(x, y, "O");
+        }
+        else 
+        {
+            std::cerr << "Invalid position for cancer cell ID " << cell.getId() 
+                      << ": (" << x << ", " << y << ")\n";
+        }
+    }
+}
+
+
+
+/*
+Verifica se o numero de posicionado é o mesmo que o definido
+*/
+
+bool CellLattice::verifyPlacement(const std::vector<Cell>& chasers, 
+                                   const std::vector<Cell>& escapers) const
+{
+    int countN = 0;
+    int countO = 0;
+    
+    // Conta elementos no grid
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            if (m_grid[y][x] == "N") countN++;
+            else if (m_grid[y][x] == "O") countO++;
+        }
+    }
+    
+    // Verifica se os números correspondem
+    bool correct = (countN == static_cast<int>(chasers.size())) &&
+                   (countO == static_cast<int>(escapers.size()));
+    
+    if (!correct) {
+        std::cerr << "Placement verification failed!\n";
+        std::cerr << "  Grid: N=" << countN << ", O=" << countO << "\n";
+        std::cerr << "  Vectors: N=" << chasers.size() << ", O=" << escapers.size() << "\n";
+    }
+    
+    return correct;
 }
 
 
@@ -264,21 +219,21 @@ std::string CellLattice::getGridValue(int x, int y) const {
 }
 
 
-// /**
-//  * @brief Prints the grid to console
-//  */
-// void CellLattice::printGrid() const 
-// {
-//     for (int y = 0; y < m_height; ++y) 
-//     {
-//         for (int x = 0; x < m_width; ++x) 
-//         {
-//             std::cout << m_grid[y][x] << " ";
-//         }
-//         std::cout << "\n";
-//     }
-//     std::cout << "---------------------------\n";
-// }
+/**
+ * @brief Prints the grid to console
+ */
+void CellLattice::printGrid() const 
+{
+    for (int y = 0; y < m_height; ++y) 
+    {
+        for (int x = 0; x < m_width; ++x) 
+        {
+            std::cout << m_grid[y][x] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "---------------------------\n";
+}
 
 /**
  * @brief Counts targets around a position

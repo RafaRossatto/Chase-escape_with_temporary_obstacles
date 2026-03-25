@@ -10,7 +10,7 @@
  * @param positionX Initial X coordinate
  * @param positionY Initial Y coordinate
  */
-Cell::Cell(const std::string& type, int id, int positionX, int positionY)
+Cell::Cell(const std::string& type, int id, int positionX, int positionY, int searchRadius)
     : m_type(type), m_id(id), m_positionX(positionX), m_positionY(positionY), m_searchRadius(0)
 {}
 
@@ -18,7 +18,70 @@ Cell::Cell(const std::string& type, int id, int positionX, int positionY)
 
 
 
-std::vector<Cell> Cell::loadFromCSV(const std::string& filename, const std::string& type) {
+// std::vector<Cell> (const std::string& type, int id, int positionX, int positionY, int searchRadius); {
+//     std::vector<Cell> cells;
+//     std::ifstream file(filename);
+    
+//     if (!file.is_open()) {
+//         std::cerr << "Erro ao abrir arquivo: " << filename << std::endl;
+//         return cells;
+//     }
+    
+//     std::string line;
+//     bool isFirstLine = true;
+//     int lineCount = 0;
+    
+//     while (std::getline(file, line)) {
+//         lineCount++;
+        
+//         // Pular linha de cabeçalho
+//         if (isFirstLine) {
+//             isFirstLine = false;
+//             continue;
+//         }
+        
+//         // Remover espaços em branco
+//         line.erase(0, line.find_first_not_of(" \t\r\n"));
+//         line.erase(line.find_last_not_of(" \t\r\n") + 1);
+        
+//         if (line.empty()) continue;
+        
+//         std::stringstream ss(line);
+//         std::string x_str, y_str, id_str;
+        
+//         // Ler valores separados por vírgula
+//         if (std::getline(ss, x_str, ',') && 
+//             std::getline(ss, y_str, ',') && 
+//             std::getline(ss, id_str, ',')) {
+            
+//             try {
+//                 int x = std::stoi(x_str);
+//                 int y = std::stoi(y_str);
+//                 int id = std::stoi(id_str);
+                
+//                 // Criar objeto Cell
+//                 Cell cell(type, id, x, y);
+//                 cells.push_back(cell);
+                
+//                 std::cout << "Carregada célula ID=" << id 
+//                           << " Tipo=" << type 
+//                           << " Pos=(" << x << "," << y << ")\n";
+                          
+//             } catch (const std::exception& e) {
+//                 std::cerr << "Erro na linha " << lineCount << ": " << e.what() << std::endl;
+//             }
+//         }
+//     }
+    
+//     file.close();
+//     std::cout << "Total carregado: " << cells.size() << " células do tipo " << type << std::endl;
+//     return cells;
+// }
+
+
+std::vector<Cell> Cell::loadFromCSV(const std::string& filename, 
+                                     const std::string& type,
+                                     int defaultSearchRadius) {
     std::vector<Cell> cells;
     std::ifstream file(filename);
     
@@ -34,13 +97,11 @@ std::vector<Cell> Cell::loadFromCSV(const std::string& filename, const std::stri
     while (std::getline(file, line)) {
         lineCount++;
         
-        // Pular linha de cabeçalho
         if (isFirstLine) {
             isFirstLine = false;
             continue;
         }
         
-        // Remover espaços em branco
         line.erase(0, line.find_first_not_of(" \t\r\n"));
         line.erase(line.find_last_not_of(" \t\r\n") + 1);
         
@@ -49,7 +110,6 @@ std::vector<Cell> Cell::loadFromCSV(const std::string& filename, const std::stri
         std::stringstream ss(line);
         std::string x_str, y_str, id_str;
         
-        // Ler valores separados por vírgula
         if (std::getline(ss, x_str, ',') && 
             std::getline(ss, y_str, ',') && 
             std::getline(ss, id_str, ',')) {
@@ -59,13 +119,14 @@ std::vector<Cell> Cell::loadFromCSV(const std::string& filename, const std::stri
                 int y = std::stoi(y_str);
                 int id = std::stoi(id_str);
                 
-                // Criar objeto Cell
-                Cell cell(type, id, x, y);
+                // Usar o construtor com searchRadius
+                Cell cell(type, id, x, y, defaultSearchRadius);
                 cells.push_back(cell);
                 
                 std::cout << "Carregada célula ID=" << id 
                           << " Tipo=" << type 
-                          << " Pos=(" << x << "," << y << ")\n";
+                          << " Pos=(" << x << "," << y << ")"
+                          << " Raio=" << defaultSearchRadius << "\n";
                           
             } catch (const std::exception& e) {
                 std::cerr << "Erro na linha " << lineCount << ": " << e.what() << std::endl;
@@ -77,9 +138,6 @@ std::vector<Cell> Cell::loadFromCSV(const std::string& filename, const std::stri
     std::cout << "Total carregado: " << cells.size() << " células do tipo " << type << std::endl;
     return cells;
 }
-
-
-
 
 
 

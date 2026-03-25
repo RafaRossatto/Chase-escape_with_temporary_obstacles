@@ -44,7 +44,7 @@ class Cell
          * @param positionX Initial X coordinate
          * @param positionY Initial Y coordinate
          */
-        Cell(const std::string& type, int id, int positionX, int positionY);
+        Cell(const std::string& type, int id, int positionX, int positionY, int searchRadius);
 
         /**
          * @brief Performs a random walk movement in the specified direction
@@ -64,8 +64,9 @@ class Cell
 
 
        // Método estático para carregar células de um arquivo CSV
-    static std::vector<Cell> loadFromCSV(const std::string& filename, const std::string& type);
-
+    static std::vector<Cell> loadFromCSV(const std::string& filename, 
+                                         const std::string& type,
+                                         int defaultSearchRadius = 0);  // valor padrão é 0
 
 
 

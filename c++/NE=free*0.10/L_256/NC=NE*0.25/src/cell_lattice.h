@@ -40,16 +40,6 @@ class CellLattice
      * @param height Height of the grid
      */
     CellLattice(int width, int height);
-        /**
-     * @brief Loads obstacles from file
-     * 
-     * @param obstacles Vector to store loaded obstacles
-     * @param numObstacles Number of obstacles to load
-     * @param line Reference to store read lines
-     * @return true if loading successful
-     * @return false if loading failed
-     */
-    bool loadObstacles(std::vector<Obstacle>& obstacles, int numObstacles, std::string& line) const;
     
     /**
      * @brief Calculates Manhattan distance with toroidal wrapping
@@ -60,6 +50,26 @@ class CellLattice
      * @param y2 Second point Y coordinate
      * @return double Manhattan distance
      */
+
+
+    /**
+     * @brief Places objects (chasers, escapers) on the grid
+     * @param chasers Vector of chasers
+     * @param escapers Vector of chasers
+     */
+    void placeObjects(std::vector<Cell>& chasers,
+        std::vector<Cell>& escapers);
+
+    /**
+     * @brief Verify if the objects positoned are in the same quantitie as define
+     * @param chasers Vector of chasers
+     * @param escapers Vector of chasers
+     */
+
+    bool verifyPlacement(const std::vector<Cell>& chasers, 
+                                   const std::vector<Cell>& escapers) const;
+
+    
     double calculateDistance(int x1, int y1, int x2, int y2) const;
     
     /**

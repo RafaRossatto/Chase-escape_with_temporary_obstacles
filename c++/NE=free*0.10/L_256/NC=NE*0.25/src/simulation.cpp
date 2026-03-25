@@ -108,181 +108,181 @@ void Simulation::saveTrajectoryData(int run) const
 /**
  * @brief Runs a single simulation run
  */
-SimulationResult Simulation::runSingle(int run, std::mt19937& rng) 
-{
-    // Clear previous trajectory data
-    clearTrajectoryData();
+// SimulationResult Simulation::runSingle(int run, std::mt19937& rng) 
+// {
+//     // Clear previous trajectory data
+//     clearTrajectoryData();
     
-    const int gridSize = m_lattice.getWidth();
-    std::ostringstream ossHunters;
-    ossHunters << std::setw(2) << std::setfill('0') << m_numHunters;
-    std::string huntersStr = "nC_" + ossHunters.str();
+//     const int gridSize = m_lattice.getWidth();
+//     std::ostringstream ossHunters;
+//     ossHunters << std::setw(2) << std::setfill('0') << m_numHunters;
+//     std::string huntersStr = "nC_" + ossHunters.str();
 
-    std::ostringstream ossRun;
-    ossRun << std::setw(2) << std::setfill('0') << run;
-    std::string runStr = "run_" + ossRun.str();
+//     std::ostringstream ossRun;
+//     ossRun << std::setw(2) << std::setfill('0') << run;
+//     std::string runStr = "run_" + ossRun.str();
 
-    std::ostringstream ossObs;
-    ossObs << std::setw(2) << std::setfill('0') << m_numObstacles;
-    std::string obsStr = "obs_" + ossObs.str();
+//     std::ostringstream ossObs;
+//     ossObs << std::setw(2) << std::setfill('0') << m_numObstacles;
+//     std::string obsStr = "obs_" + ossObs.str();
 
-    std::string filePath = "../" + obsStr + "/" + huntersStr + "/" + runStr + "/inaccessible_preys.txt";
+//     std::string filePath = "../" + obsStr + "/" + huntersStr + "/" + runStr + "/inaccessible_preys.txt";
 
-    std::vector<Cell> localHunters, localPrey;
-    std::vector<Obstacle> localObstacles = m_obstacles;
+//     std::vector<Cell> localHunters, localPrey;
+//     std::vector<Obstacle> localObstacles = m_obstacles;
     
-    // Open inaccessible prey file
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        logError("Error opening file: " + filePath);
-        return {0.0, 0};
-    }
+//     // Open inaccessible prey file
+//     std::ifstream file(filePath);
+//     if (!file.is_open()) {
+//         logError("Error opening file: " + filePath);
+//         return {0.0, 0};
+//     }
 
-    // Place objects on the grid
-    if (!m_lattice.placeObjects(localObstacles, localHunters, localPrey, 
-                               m_numObstacles, m_numHunters, m_numPrey, 
-                               rng, m_hunterSearchRadius, m_preySearchRadius, run)) {
-        logError("Failed to place objects in run " + std::to_string(run));
-        return {0.0, 0};
-    }
+//     // Place objects on the grid
+//     if (!m_lattice.placeObjects(localObstacles, localHunters, localPrey, 
+//                                m_numObstacles, m_numHunters, m_numPrey, 
+//                                rng, m_hunterSearchRadius, m_preySearchRadius, run)) {
+//         logError("Failed to place objects in run " + std::to_string(run));
+//         return {0.0, 0};
+//     }
 
-    int inaccessibleCount = 0;
-    file >> inaccessibleCount;
-    file.close();
+//     int inaccessibleCount = 0;
+//     file >> inaccessibleCount;
+//     file.close();
     
-    std::uniform_int_distribution<int> distX(0, gridSize - 1);
-    std::uniform_int_distribution<int> distY(0, gridSize - 1);
+//     std::uniform_int_distribution<int> distX(0, gridSize - 1);
+//     std::uniform_int_distribution<int> distY(0, gridSize - 1);
 
-    double time = 0.0;
-    const double recordingInterval = 1.0;
-    double nextRecordingTime = recordingInterval;
-    bool checkPrey;
-
-
-    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
-    int value = 10; // Max life for a temp_obs
-
-    saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
-
-    // Evolution file for prey count
-    std::ofstream evolutionFile(m_fileName + "_run_" + std::to_string(run) + "_prey_per_step.csv");
-    if (!evolutionFile.is_open()) {
-        logError("Error creating evolution file for run " + std::to_string(run));
-        return {0.0, 0};
-    }
-
-    evolutionFile << "step,living_prey\n";
-    evolutionFile << time << "," << localPrey.size() << "\n";
-
-    std::ofstream captureFile(m_fileName + "_run_" + std::to_string(run) + "_captures.csv");
-    if (!captureFile.is_open()) 
-    {
-        logError("Error creating capture log file for run " + std::to_string(run));
-        return {0.0, 0};
-    }
-captureFile << "timestep,hunter_id,prey_id\n";
-
-    // Main simulation loop
-    while (time < 1.0e5) {
-        // Stop condition: all prey are captured or inaccessible
+//     double time = 0.0;
+//     const double recordingInterval = 1.0;
+//     double nextRecordingTime = recordingInterval;
+//     bool checkPrey;
 
 
-        if (inaccessibleCount == static_cast<int>(localPrey.size())) {
-            evolutionFile << time << "," << localPrey.size() << "\n";
-            break;
-        }
+//     std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
+//     int value = 10; // Max life for a temp_obs
+
+//     saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
+
+//     // Evolution file for prey count
+//     std::ofstream evolutionFile(m_fileName + "_run_" + std::to_string(run) + "_prey_per_step.csv");
+//     if (!evolutionFile.is_open()) {
+//         logError("Error creating evolution file for run " + std::to_string(run));
+//         return {0.0, 0};
+//     }
+
+//     evolutionFile << "step,living_prey\n";
+//     evolutionFile << time << "," << localPrey.size() << "\n";
+
+//     std::ofstream captureFile(m_fileName + "_run_" + std::to_string(run) + "_captures.csv");
+//     if (!captureFile.is_open()) 
+//     {
+//         logError("Error creating capture log file for run " + std::to_string(run));
+//         return {0.0, 0};
+//     }
+// captureFile << "timestep,hunter_id,prey_id\n";
+
+//     // Main simulation loop
+//     while (time < 1.0e5) {
+//         // Stop condition: all prey are captured or inaccessible
 
 
-                //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
-        if (!tempObstacles.empty()) {
-            for (auto it = tempObstacles.begin(); it != tempObstacles.end(); ) {
-                // Soma uma unidade ao life
-                it->addLife();
+//         if (inaccessibleCount == static_cast<int>(localPrey.size())) {
+//             evolutionFile << time << "," << localPrey.size() << "\n";
+//             break;
+//         }
+
+
+//                 //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
+//         if (!tempObstacles.empty()) {
+//             for (auto it = tempObstacles.begin(); it != tempObstacles.end(); ) {
+//                 // Soma uma unidade ao life
+//                 it->addLife();
                 
-                // Verifica se life > value
-                if (it->getLife() > value) {
-                    // Apaga o elemento e atualiza o iterador
-                    it = tempObstacles.erase(it);
-                } else {
-                    // Avança para o próximo elemento
-                    ++it;
-                }
-            }
-        }
+//                 // Verifica se life > value
+//                 if (it->getLife() > value) {
+//                     // Apaga o elemento e atualiza o iterador
+//                     it = tempObstacles.erase(it);
+//                 } else {
+//                     // Avança para o próximo elemento
+//                     ++it;
+//                 }
+//             }
+//         }
 
 
-        // Process gridSize*gridSize movements
-        for (int i = 0; i < gridSize * gridSize; ++i) {
-            int randomX = distX(rng);
-            int randomY = distY(rng);
-            std::string gridValue = m_lattice.getGridValue(randomX, randomY);
-            bool found = false;
+//         // Process gridSize*gridSize movements
+//         for (int i = 0; i < gridSize * gridSize; ++i) {
+//             int randomX = distX(rng);
+//             int randomY = distY(rng);
+//             std::string gridValue = m_lattice.getGridValue(randomX, randomY);
+//             bool found = false;
 
-            // Try to move hunter cell
-            for (auto& cell : localHunters) 
-            {
-                if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
-                    checkPrey = false;
-                    int capturedPreyId = m_lattice.moveNormalCell(cell, localHunters, localPrey,
-                        localObstacles, rng, checkPrey,
-                        m_hunterSearchRadius,tempObstacles);
+//             // Try to move hunter cell
+//             for (auto& cell : localHunters) 
+//             {
+//                 if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
+//                     checkPrey = false;
+//                     int capturedPreyId = m_lattice.moveNormalCell(cell, localHunters, localPrey,
+//                         localObstacles, rng, checkPrey,
+//                         m_hunterSearchRadius,tempObstacles);
 
-                    if (capturedPreyId >= 0) 
-                    {
-                        int preyX = cell.getPositionX();  // posição do hunter após mover = posição da presa
-                        int preyY = cell.getPositionY();
-                        logCapture(captureFile, time, cell.getId(), capturedPreyId);
-                    }
-                    found = true;
-                    break;
-                }
-            }
+//                     if (capturedPreyId >= 0) 
+//                     {
+//                         int preyX = cell.getPositionX();  // posição do hunter após mover = posição da presa
+//                         int preyY = cell.getPositionY();
+//                         logCapture(captureFile, time, cell.getId(), capturedPreyId);
+//                     }
+//                     found = true;
+//                     break;
+//                 }
+//             }
 
-            // If no hunter found, try to move prey cell
-            if (!found) {
-                for (auto& cell : localPrey) {
-                    if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
-                        checkPrey = true;
-                        m_lattice.moveCancerCell(cell, localHunters, localPrey, localObstacles, 
-                                               rng, checkPrey, m_preySearchRadius, tempObstacles);
-                        break;
-                    }
-                }
-            }
-        }
+//             // If no hunter found, try to move prey cell
+//             if (!found) {
+//                 for (auto& cell : localPrey) {
+//                     if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
+//                         checkPrey = true;
+//                         m_lattice.moveCancerCell(cell, localHunters, localPrey, localObstacles, 
+//                                                rng, checkPrey, m_preySearchRadius, tempObstacles);
+//                         break;
+//                     }
+//                 }
+//             }
+//         }
 
-        // Record state at each interval
-        if (time >= nextRecordingTime) {
-            evolutionFile << time << "," << localPrey.size() << "\n";
-            //  Save positions at recording interval
-            saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
-            nextRecordingTime += recordingInterval;
-        }
+//         // Record state at each interval
+//         if (time >= nextRecordingTime) {
+//             evolutionFile << time << "," << localPrey.size() << "\n";
+//             //  Save positions at recording interval
+//             saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
+//             nextRecordingTime += recordingInterval;
+//         }
 
-        // Stop condition: prey count reached minimum
-        if (static_cast<int>(localPrey.size()) <= inaccessibleCount) {
-            break;
-        }
+//         // Stop condition: prey count reached minimum
+//         if (static_cast<int>(localPrey.size()) <= inaccessibleCount) {
+//             break;
+//         }
 
-        time += 1.0;
-    }
+//         time += 1.0;
+//     }
 
-    // Save final positions
-   // saveCurrentPositions(time, localPrey, localHunters);
+//     // Save final positions
+//    // saveCurrentPositions(time, localPrey, localHunters);
     
-    evolutionFile.close();
+//     evolutionFile.close();
     
-    // Save trajectory data to files
-    saveTrajectoryData(run);
-    captureFile.close();
+//     // Save trajectory data to files
+//     saveTrajectoryData(run);
+//     captureFile.close();
     
-    return {time, static_cast<int>(localPrey.size())};
-}
+//     return {time, static_cast<int>(localPrey.size())};
+// }
 
-void Simulation::logCapture(std::ofstream& captureFile, double timestep,
-    int hunterId, int preyId) const
-{
-captureFile << timestep << ","
-<< hunterId << ","
-<< preyId <<"\n";
-}
+// void Simulation::logCapture(std::ofstream& captureFile, double timestep,
+//     int hunterId, int preyId) const
+// {
+// captureFile << timestep << ","
+// << hunterId << ","
+// << preyId <<"\n";
+// }
