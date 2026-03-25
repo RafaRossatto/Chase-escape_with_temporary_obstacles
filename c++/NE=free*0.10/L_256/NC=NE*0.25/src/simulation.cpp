@@ -4,24 +4,147 @@
 #include <fstream>
 #include "temp_obs.h"
 #include "cell_lattice.h"
+#include <filesystem>
 
-/**
- * @brief Constructs a new Simulation object
- */
-Simulation::Simulation(CellLattice& lattice, int numHunters, int numPrey, int numObstacles,
-    double hunterNoise, double preyNoise, 
-    const std::vector<Obstacle>& obstacles, int hunterSearchRadius, int preySearchRadius,
-    unsigned int seed)
-: m_lattice(lattice), m_numHunters(numHunters), m_numPrey(numPrey), m_numObstacles(numObstacles),
-  m_hunterNoise(hunterNoise), m_preyNoise(preyNoise), 
-  m_obstacles(obstacles), m_hunterSearchRadius(hunterSearchRadius), 
-  m_preySearchRadius(preySearchRadius), m_seed(seed)
+// /**
+//  * @brief Constructs a new Simulation object
+//  */
+// Simulation::Simulation(CellLattice& lattice, unsigned int seed)
+// : m_lattice(lattice), m_seed(seed)
+// {
+//     m_fileName = generateFileName(m_numHunters, m_numPrey, m_numObstacles, 
+//                                  m_preyNoise, m_hunterNoise, 
+//                                  m_hunterSearchRadius, m_preySearchRadius);
+    
+//     clearTrajectoryData();
+// }
+
+
+
+namespace fs = std::filesystem;
+
+Simulation::Simulation(CellLattice& lattice, unsigned int seed,
+                       const std::string& path_out, const std::string& directory_name,
+                       const std::string& base_name)
+    : m_lattice(lattice), m_seed(seed), m_baseName(base_name)
 {
-    m_fileName = generateFileName(m_numHunters, m_numPrey, m_numObstacles, 
-                                 m_preyNoise, m_hunterNoise, 
-                                 m_hunterSearchRadius, m_preySearchRadius);
+    // Constrói o caminho completo
+    m_outputPath = fs::path(path_out) / directory_name;
+    
+    // Cria o diretório se não existir
+    if (!fs::exists(m_outputPath)) {
+        if (fs::create_directories(m_outputPath)) {
+            std::cout << "Diretório criado: " << m_outputPath << std::endl;
+        } else {
+            std::cerr << "Erro ao criar diretório: " << m_outputPath << std::endl;
+        }
+    }
+    
     clearTrajectoryData();
 }
+
+
+
+
+std::string Simulation::getFilePath(const std::string& filename) const
+{
+    return m_outputPath + "/" + m_baseName + "_" + filename;
+}
+
+void Simulation::saveChasersPositions()
+{
+    std::string filepath = getFilePath("chasers.csv");
+    std::ofstream file(filepath);
+    
+    if (!file.is_open()) {
+        std::cerr << "Erro ao criar arquivo: " << filepath << std::endl;
+        return;
+    }
+    
+    // Escreve cabeçalho
+    file << "x,y,id\n";
+    
+    // Escreve dados dos chasers
+    for (const auto& chaser : m_chasers) {
+        file << chaser.getPositionX() << ","
+             << chaser.getPositionY() << ","
+             << chaser.getId() << "\n";
+    }
+    
+    file.close();
+    std::cout << "Chasers saved to: " << filepath << std::endl;
+}
+
+void Simulation::saveEscapersPositions()
+{
+    std::string filepath = getFilePath("escapers.csv");
+    std::ofstream file(filepath);
+    
+    if (!file.is_open()) {
+        std::cerr << "Erro ao criar arquivo: " << filepath << std::endl;
+        return;
+    }
+    
+    // Escreve cabeçalho
+    file << "x,y,id\n";
+    
+    // Escreve dados dos escapers
+    for (const auto& escaper : m_escapers) {
+        file << escaper.getPositionX() << ","
+             << escaper.getPositionY() << ","
+             << escaper.getId() << "\n";
+    }
+    
+    file.close();
+    std::cout << "Escapers saved to: " << filepath << std::endl;
+}
+
+void Simulation::saveSeed()
+{
+    std::string filepath = getFilePath("seed.txt");
+    std::ofstream file(filepath);
+    
+    if (!file.is_open()) {
+        std::cerr << "Erro ao criar arquivo: " << filepath << std::endl;
+        return;
+    }
+    
+    file << "Seed: " << m_seed << "\n";
+    file << "Timestamp: " << time(nullptr) << "\n";
+    
+    file.close();
+    std::cout << "Seed saved to: " << filepath << std::endl;
+}
+
+void Simulation::saveSimulationData()
+{
+    saveChasersPositions();
+    saveEscapersPositions();
+    saveSeed();
+    std::cout << "All simulation data saved to: " << m_outputPath << std::endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief Saves current positions to trajectory data

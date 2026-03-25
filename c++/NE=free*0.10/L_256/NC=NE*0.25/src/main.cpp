@@ -14,6 +14,7 @@
 #include <map>
 #include "cell_lattice.h"
 #include "cell.h"
+#include "simulation.h"
 
 // namespace fs = std::filesystem;
 
@@ -234,13 +235,24 @@ int main() {
     //     std::mt19937 rng(runSeed);
         
     //     // Create simulation instance for this thread
-    //     Simulation sim(lattice,runSeed, path_out, base_name);
+    //     Simulation sim(lattice,runSeed, path_out,base_directory_name, base_name);
     //     logInfo("Processing run " + std::to_string(run));
         
     //     // Execute simulation run and collect results
     //     SimulationResult result = sim.runSingle(run, rng);
 
+        unsigned int runSeed = 12345;
+    std::string path_out = "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_environment/data_raw";
+    std::string directory_name = "simulation_frac_25_run_1";
+    std::string base_name = "results";
     
+    // Criar simulação
+    Simulation sim(lattice, runSeed, path_out, directory_name, base_name);
+    
+    // Para salvar um arquivo
+    //std::string chaserFile = sim.getOutputFilePath("chasers.csv");
+    //std::cout << "Arquivo de saída: " << chaserFile << std::endl;
+    // Isso irá gerar: output/simulation_frac_25_run_1/results_chasers.csv
     
     return 0;
 }

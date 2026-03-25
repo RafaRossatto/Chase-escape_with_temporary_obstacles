@@ -55,6 +55,14 @@ private:
     int m_preySearchRadius;          /**< Search radius for prey cells */
     unsigned int m_seed;             /**< Random seed for reproducibility */
     TrajectoryData m_trajectoryData; /**< Trajectory data storage */
+    std::string m_baseName;        // Nome base para os arquivos
+    std::string m_outputPath;      // ADICIONE ESTA LINHA
+    // int m_chasers;                /**< Number of hunter (normal) cells */
+    // int m_escapers;                   /**< Number of prey (cancer) cells */
+    std::string getFilePath(const std::string& filename) const;
+
+    std::vector<Cell> m_chasers;
+    std::vector<Cell> m_escapers;
 
     /**
      * @brief Saves current positions to trajectory data
@@ -80,11 +88,18 @@ public:
      * @param preySearchRadius Search radius for prey
      * @param seed Random seed (0 for random)
      */
-    Simulation(CellLattice& lattice, int numHunters, int numPrey, int numObstacles,
-               double hunterNoise, double preyNoise, 
-               const std::vector<Obstacle>& obstacles, int hunterSearchRadius, int preySearchRadius,
-               unsigned int seed = 0);
+    //Simulation(CellLattice& lattice, unsigned int seed = 0);
+    Simulation(CellLattice& lattice, unsigned int seed,
+                       const std::string& path_out, const std::string& directory_name,
+                       const std::string& base_name);
     
+
+    void saveChasersPositions();
+    void saveEscapersPositions();
+    void saveSeed();
+    void saveSimulationData();  // Salva todos os dados
+
+
     /**
      * @brief Runs a single simulation run
      * 
