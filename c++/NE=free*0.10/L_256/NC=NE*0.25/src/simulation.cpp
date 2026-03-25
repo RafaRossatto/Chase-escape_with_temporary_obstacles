@@ -114,42 +114,9 @@ void Simulation::saveTrajectoryData(int run) const
 //     clearTrajectoryData();
     
 //     const int gridSize = m_lattice.getWidth();
-//     std::ostringstream ossHunters;
-//     ossHunters << std::setw(2) << std::setfill('0') << m_numHunters;
-//     std::string huntersStr = "nC_" + ossHunters.str();
-
-//     std::ostringstream ossRun;
-//     ossRun << std::setw(2) << std::setfill('0') << run;
-//     std::string runStr = "run_" + ossRun.str();
-
-//     std::ostringstream ossObs;
-//     ossObs << std::setw(2) << std::setfill('0') << m_numObstacles;
-//     std::string obsStr = "obs_" + ossObs.str();
-
-//     std::string filePath = "../" + obsStr + "/" + huntersStr + "/" + runStr + "/inaccessible_preys.txt";
 
 //     std::vector<Cell> localHunters, localPrey;
-//     std::vector<Obstacle> localObstacles = m_obstacles;
-    
-//     // Open inaccessible prey file
-//     std::ifstream file(filePath);
-//     if (!file.is_open()) {
-//         logError("Error opening file: " + filePath);
-//         return {0.0, 0};
-//     }
-
-//     // Place objects on the grid
-//     if (!m_lattice.placeObjects(localObstacles, localHunters, localPrey, 
-//                                m_numObstacles, m_numHunters, m_numPrey, 
-//                                rng, m_hunterSearchRadius, m_preySearchRadius, run)) {
-//         logError("Failed to place objects in run " + std::to_string(run));
-//         return {0.0, 0};
-//     }
-
-//     int inaccessibleCount = 0;
-//     file >> inaccessibleCount;
-//     file.close();
-    
+       
 //     std::uniform_int_distribution<int> distX(0, gridSize - 1);
 //     std::uniform_int_distribution<int> distY(0, gridSize - 1);
 
@@ -162,7 +129,7 @@ void Simulation::saveTrajectoryData(int run) const
 //     std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
 //     int value = 10; // Max life for a temp_obs
 
-//     saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
+//     saveCurrentPositions(time, localPrey, localHunters, tempObstacles);
 
 //     // Evolution file for prey count
 //     std::ofstream evolutionFile(m_fileName + "_run_" + std::to_string(run) + "_prey_per_step.csv");
@@ -180,20 +147,13 @@ void Simulation::saveTrajectoryData(int run) const
 //         logError("Error creating capture log file for run " + std::to_string(run));
 //         return {0.0, 0};
 //     }
-// captureFile << "timestep,hunter_id,prey_id\n";
+//     captureFile << "timestep,hunter_id,prey_id\n";
 
 //     // Main simulation loop
 //     while (time < 1.0e5) {
 //         // Stop condition: all prey are captured or inaccessible
 
-
-//         if (inaccessibleCount == static_cast<int>(localPrey.size())) {
-//             evolutionFile << time << "," << localPrey.size() << "\n";
-//             break;
-//         }
-
-
-//                 //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
+//         //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
 //         if (!tempObstacles.empty()) {
 //             for (auto it = tempObstacles.begin(); it != tempObstacles.end(); ) {
 //                 // Soma uma unidade ao life
@@ -257,11 +217,6 @@ void Simulation::saveTrajectoryData(int run) const
 //             //  Save positions at recording interval
 //             saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
 //             nextRecordingTime += recordingInterval;
-//         }
-
-//         // Stop condition: prey count reached minimum
-//         if (static_cast<int>(localPrey.size()) <= inaccessibleCount) {
-//             break;
 //         }
 
 //         time += 1.0;

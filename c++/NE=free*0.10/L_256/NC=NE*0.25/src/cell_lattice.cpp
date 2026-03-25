@@ -1,3 +1,4 @@
+#include <map>
 #include "cell_lattice.h"
 #include <iomanip>
 #include <algorithm> 
@@ -112,6 +113,132 @@ void CellLattice::placeObjects(std::vector<Cell>& chasers, std::vector<Cell>& es
 
 
 
+bool CellLattice:: checkDuplicates(const std::vector<Cell>& chasers, const std::vector<Cell>& escapers, int width, int height) {
+    std::cout << "\n=== VERIFICAÇÃO DE POSIÇÕES ===\n";
+    bool isValid = true;  // Assume que está válido
+    
+    // 1. Verificar se alguma posição está fora do grid
+    std::cout << "\n1. Verificando posições fora do grid (" << width << "x" << height << "):\n";
+    bool hasOutOfBounds = false;
+    
+    for (const auto& cell : chasers) {
+        int x = cell.getPositionX();
+        int y = cell.getPositionY();
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            std::cout << "  CHASER ID=" << cell.getId() 
+                      << " fora do grid: (" << x << "," << y << ")\n";
+            hasOutOfBounds = true;
+            isValid = false;
+        }
+    }
+    
+    for (const auto& cell : escapers) {
+        int x = cell.getPositionX();
+        int y = cell.getPositionY();
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            std::cout << "  ESCAPER ID=" << cell.getId() 
+                      << " fora do grid: (" << x << "," << y << ")\n";
+            hasOutOfBounds = true;
+            isValid = false;
+        }
+    }
+    
+    if (!hasOutOfBounds) {
+        std::cout << "  Todas as posições estão dentro do grid!\n";
+    }
+    
+    // 2. Verificar posições duplicadas entre chasers e escapers
+    std::cout << "\n2. Verificando posições duplicadas entre CHASERS e ESCAPERS:\n";
+    
+    std::map<std::pair<int,int>, int> escaperPositions;
+    for (const auto& cell : escapers) {
+        escaperPositions[{cell.getPositionX(), cell.getPositionY()}] = cell.getId();
+    }
+    
+    bool hasDuplicates = false;
+    for (const auto& cell : chasers) {
+        auto pos = std::make_pair(cell.getPositionX(), cell.getPositionY());
+        auto it = escaperPositions.find(pos);
+        if (it != escaperPositions.end()) {
+            std::cout << "  DUPLICATA: Chaser ID=" << cell.getId() 
+                      << " e Escaper ID=" << it->second 
+                      << " na posição (" << pos.first << "," << pos.second << ")\n";
+            hasDuplicates = true;
+            isValid = false;
+        }
+    }
+    
+    if (!hasDuplicates) {
+        std::cout << "  Nenhuma posição duplicada entre chasers e escapers!\n";
+    }
+    
+    // 3. Verificar duplicatas dentro da mesma lista
+    std::cout << "\n3. Verificando duplicatas dentro da mesma lista:\n";
+    
+    // Verificar duplicatas nos chasers
+    std::map<std::pair<int,int>, std::vector<int>> chaserPositions;
+    for (const auto& cell : chasers) {
+        chaserPositions[{cell.getPositionX(), cell.getPositionY()}].push_back(cell.getId());
+    }
+    
+    bool hasChaserDuplicates = false;
+    for (const auto& [pos, ids] : chaserPositions) {
+        if (ids.size() > 1) {
+            std::cout << "  CHASERS duplicados na posição (" << pos.first << "," << pos.second 
+                      << "): IDs = ";
+            for (size_t i = 0; i < ids.size(); i++) {
+                if (i > 0) std::cout << ", ";
+                std::cout << ids[i];
+            }
+            std::cout << "\n";
+            hasChaserDuplicates = true;
+            isValid = false;
+        }
+    }
+    
+    // Verificar duplicatas nos escapers
+    std::map<std::pair<int,int>, std::vector<int>> escaperPositionsList;
+    for (const auto& cell : escapers) {
+        escaperPositionsList[{cell.getPositionX(), cell.getPositionY()}].push_back(cell.getId());
+    }
+    
+    bool hasEscaperDuplicates = false;
+    for (const auto& [pos, ids] : escaperPositionsList) {
+        if (ids.size() > 1) {
+            std::cout << "  ESCAPERS duplicados na posição (" << pos.first << "," << pos.second 
+                      << "): IDs = ";
+            for (size_t i = 0; i < ids.size(); i++) {
+                if (i > 0) std::cout << ", ";
+                std::cout << ids[i];
+            }
+            std::cout << "\n";
+            hasEscaperDuplicates = true;
+            isValid = false;
+        }
+    }
+    
+    if (!hasChaserDuplicates && !hasEscaperDuplicates) {
+        std::cout << "  Nenhuma duplicata dentro das listas!\n";
+    }
+    
+    // 4. Estatísticas gerais
+    std::cout << "\n4. Estatísticas:\n";
+    std::cout << "  Total de Chasers: " << chasers.size() << "\n";
+    std::cout << "  Total de Escapers: " << escapers.size() << "\n";
+    std::cout << "  Posições únicas ocupadas: " 
+              << (chaserPositions.size() + escaperPositionsList.size()) << "\n";
+    
+    if (isValid) {
+        std::cout << "\n✓ VERIFICAÇÃO PASSADA - Todos os dados estão corretos!\n";
+    } else {
+        std::cout << "\n✗ VERIFICAÇÃO FALHOU - Existem erros nos dados!\n";
+    }
+    
+    return isValid;
+}
+
+
+
 /*
 Verifica se o numero de posicionado é o mesmo que o definido
 */
@@ -142,6 +269,10 @@ bool CellLattice::verifyPlacement(const std::vector<Cell>& chasers,
     
     return correct;
 }
+
+
+
+
 
 
 /**

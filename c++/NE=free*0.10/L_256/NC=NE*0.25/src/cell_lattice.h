@@ -69,6 +69,16 @@ class CellLattice
     bool verifyPlacement(const std::vector<Cell>& chasers, 
                                    const std::vector<Cell>& escapers) const;
 
+
+    /**
+     * @brief Verify if the objects are be sobreposition for another
+     * @param chasers Vector of chasers
+     * @param escapers Vector of chasers
+     * @param width Size of the grid
+     * @param width Size of the grid
+     */
+    bool checkDuplicates(const std::vector<Cell>& chasers, const std::vector<Cell>& escapers, int width, int height);
+
     
     double calculateDistance(int x1, int y1, int x2, int y2) const;
     
