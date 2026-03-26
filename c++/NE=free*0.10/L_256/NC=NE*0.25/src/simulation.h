@@ -53,7 +53,7 @@ private:
     std::vector<Obstacle> m_obstacles; /**< Vector of obstacles */
     int m_hunterSearchRadius;        /**< Search radius for hunter cells */
     int m_preySearchRadius;          /**< Search radius for prey cells */
-    unsigned int m_seed;             /**< Random seed for reproducibility */
+    int m_seed;             /**< Random seed for reproducibility */
     TrajectoryData m_trajectoryData; /**< Trajectory data storage */
     std::string m_baseName;        // Nome base para os arquivos
     std::string m_outputPath;      // ADICIONE ESTA LINHA
@@ -110,7 +110,7 @@ public:
      * @param rng Random number generator
      * @return SimulationResult Results of the simulation run
      */
-    SimulationResult runSingle(int run, std::mt19937& rng);
+    void runSingle(int run);
     
     // Getters
     int getNumHunters() const { return m_numHunters; }

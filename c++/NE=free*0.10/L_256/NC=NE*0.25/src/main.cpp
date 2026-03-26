@@ -1,72 +1,11 @@
-// #include "simulation.h"
-// #include "obstacle.h"
-// #include "config.h"
-// #include "utils.h"
-// #include "cell.h"
-// #include "cell_lattice.h"
-// #include <iostream>
-// #include <fstream>
-// #include <vector>
-// #include <omp.h>
-// #include <filesystem>
-
 #include <iostream>
 #include <map>
 #include "cell_lattice.h"
 #include "cell.h"
 #include "simulation.h"
 
-// namespace fs = std::filesystem;
-
-// /**
-//  * @file main.cpp
-//  * @brief Main simulation driver program
-//  * 
-//  * This program runs multiple simulation runs sequentially and collects
-//  * statistical results for analysis.
-//  */
-
-// std::random_device rd;
-// unsigned int GLOBAL_SEED = rd(); /**< Global random seed for reproducibility */
-
-// /**
-//  * @struct RunResult
-//  * @brief Stores the results of a single simulation run
-//  */
-// struct RunResult {
-//     int run;                /**< Run identifier number */
-//     double steps;           /**< Number of steps executed */
-//     int remainingPrey;      /**< Number of remaining prey cells */
-//     unsigned int seed;      /**< Random seed used for this run */
-// };
-
-// /**
-//  * @brief Main function that drives the simulation
-//  * 
-//  * @return int Exit status (0 for success)
-
-
-
 int main() {
-    // // Basic configuration
-    // const int NUM_RUNS = 200;      /**< Number of simulation runs to execute */
-    // SIZE = 128;                    /**< Grid size (will be square grid) */
-    // WIDTH = SIZE;                  /**< Grid width */
-    // HEIGHT = SIZE;                 /**< Grid height */
 
-    // // Simulation parameters
-    // std::vector<int> numHuntersValues = {1433};        /**< Number of hunter cells */
-    // std::vector<int> numObstaclesValues = {4915};      /**< Number of obstacles */
-    // std::vector<double> hunterNoiseValues = {1.00};    /**< Hunter movement noise */
-    // std::vector<double> preyNoiseValues = {1.00};      /**< Prey movement noise */
-    // const int HUNTER_SEARCH_RADIUS = 2;               /**< Search radius for hunters */
-    // const int PREY_SEARCH_RADIUS = 2;                 /**< Search radius for prey */
-
-    // // Initialize lattice and obstacles
-    // CellLattice lattice(WIDTH, HEIGHT);
-    // std::vector<Obstacle> obstacles;
-
- 
     // // Vector to store results from all runs
     // std::vector<RunResult> results(NUM_RUNS);
 
@@ -95,27 +34,6 @@ int main() {
     //     logInfo("Completed run " + std::to_string(run));
     // }
     
-    // // Write results to file (serial section)
-    // std::ofstream outputFile("simulation_results.csv");
-    // if (!outputFile.is_open()) {
-    //     logError("Failed to open output file: simulation_results.csv");
-    //     return 1;
-    // }
-    
-    // // Write CSV header
-    // outputFile << "run,steps,remaining_prey,seed\n";
-    
-    // // Write results for all runs
-    // for (const auto& result : results) {
-    //     outputFile << result.run << "," 
-    //                << result.steps << "," 
-    //                << result.remainingPrey << "," 
-    //                << result.seed << "\n";
-    // }
-    // outputFile.close();
-    
-    // logInfo("All simulation runs completed! Results saved to: simulation_results.csv");
-
     // criar o grid
 
     const int SIZE = 256;
@@ -243,36 +161,21 @@ int main() {
     
     // Configurar simulação
     
-    unsigned int runSeed = 12345;
+    unsigned int runSeed = 12348;
     std::string path_out = "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_raw";
     std::string directory_name = "simulation_frac_25_run_2";
     std::string base_name = "results";
     
-
-
-
-    
     // Criar simulação
     Simulation sim(lattice, runSeed, path_out, directory_name, base_name);
 
-    //sim.saveAll();
     
     std::cout << "\nArquivos criados em: " << sim.getOutputPath() << std::endl;
     std::cout << "  - results_chasers.csv" << std::endl;
     std::cout << "  - results_escapers.csv" << std::endl;
     std::cout << "  - results_seed.txt" << std::endl;
+    sim.runSingle(1);
 
-
-    
-    // Para salvar um arquivo
-    //std::string chaserFile = sim.getOutputFilePath("chasers.csv");
-    //std::cout << "Arquivo de saída: " << chaserFile << std::endl;
-    // Isso irá gerar: output/simulation_frac_25_run_1/results_chasers.csv
-
-    //  Simulation sim(lattice, numHunters, numPrey, numObstacles,
-    //                    hunterNoiseValues[0], preyNoiseValues[0],
-    //                    obstacles, HUNTER_SEARCH_RADIUS, PREY_SEARCH_RADIUS,
-    //                    runSeed);
-    
+   
     return 0;
 }
