@@ -240,19 +240,39 @@ int main() {
         
     //     // Execute simulation run and collect results
     //     SimulationResult result = sim.runSingle(run, rng);
-
-        unsigned int runSeed = 12345;
-    std::string path_out = "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_environment/data_raw";
-    std::string directory_name = "simulation_frac_25_run_1";
+    
+    // Configurar simulação
+    
+    unsigned int runSeed = 12345;
+    std::string path_out = "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_raw";
+    std::string directory_name = "simulation_frac_25_run_2";
     std::string base_name = "results";
+    
+
+
+
     
     // Criar simulação
     Simulation sim(lattice, runSeed, path_out, directory_name, base_name);
+
+    //sim.saveAll();
+    
+    std::cout << "\nArquivos criados em: " << sim.getOutputPath() << std::endl;
+    std::cout << "  - results_chasers.csv" << std::endl;
+    std::cout << "  - results_escapers.csv" << std::endl;
+    std::cout << "  - results_seed.txt" << std::endl;
+
+
     
     // Para salvar um arquivo
     //std::string chaserFile = sim.getOutputFilePath("chasers.csv");
     //std::cout << "Arquivo de saída: " << chaserFile << std::endl;
     // Isso irá gerar: output/simulation_frac_25_run_1/results_chasers.csv
+
+    //  Simulation sim(lattice, numHunters, numPrey, numObstacles,
+    //                    hunterNoiseValues[0], preyNoiseValues[0],
+    //                    obstacles, HUNTER_SEARCH_RADIUS, PREY_SEARCH_RADIUS,
+    //                    runSeed);
     
     return 0;
 }

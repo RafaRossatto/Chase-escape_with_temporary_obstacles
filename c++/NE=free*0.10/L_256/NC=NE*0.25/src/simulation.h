@@ -64,6 +64,9 @@ private:
     std::vector<Cell> m_chasers;
     std::vector<Cell> m_escapers;
 
+    void createEmptyOutputFiles();  // Método para criar arquivos vazios
+    
+
     /**
      * @brief Saves current positions to trajectory data
      * @param time Current simulation time
@@ -115,7 +118,11 @@ public:
     int getNumObstacles() const { return m_numObstacles; }
     std::string getFileName() const { return m_fileName; }
     unsigned int getSeed() const { return m_seed; }
-    
+    const std::vector<Cell>& getChasers() const { return m_chasers; }
+    const std::vector<Cell>& getEscapers() const { return m_escapers; }
+    std::string getOutputPath() const { return m_outputPath; }
+
+
     /**
      * @brief Gets the trajectory data
      * @return const TrajectoryData& Reference to trajectory data

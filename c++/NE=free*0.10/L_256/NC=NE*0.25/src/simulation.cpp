@@ -23,6 +23,7 @@
 
 namespace fs = std::filesystem;
 
+// Simulation.cpp
 Simulation::Simulation(CellLattice& lattice, unsigned int seed,
                        const std::string& path_out, const std::string& directory_name,
                        const std::string& base_name)
@@ -40,10 +41,41 @@ Simulation::Simulation(CellLattice& lattice, unsigned int seed,
         }
     }
     
+    // CRIA OS ARQUIVOS VAZIOS OU COM CABEÇALHO
+    createEmptyOutputFiles();
+    
     clearTrajectoryData();
 }
 
-
+void Simulation::createEmptyOutputFiles()
+{
+    // Cria arquivo de chasers com cabeçalho
+    std::string chaserFile = getFilePath("chasers.csv");
+    std::ofstream chaserOut(chaserFile);
+    if (chaserOut.is_open()) {
+        chaserOut << "x,y,id\n";
+        chaserOut.close();
+        std::cout << "Arquivo criado: " << chaserFile << std::endl;
+    }
+    
+    // Cria arquivo de escapers com cabeçalho
+    std::string escaperFile = getFilePath("escapers.csv");
+    std::ofstream escaperOut(escaperFile);
+    if (escaperOut.is_open()) {
+        escaperOut << "x,y,id\n";
+        escaperOut.close();
+        std::cout << "Arquivo criado: " << escaperFile << std::endl;
+    }
+    
+    // Cria arquivo de seed
+    std::string seedFile = getFilePath("seed.txt");
+    std::ofstream seedOut(seedFile);
+    if (seedOut.is_open()) {
+        seedOut << "Seed: " << m_seed << "\n";
+        seedOut.close();
+        std::cout << "Arquivo criado: " << seedFile << std::endl;
+    }
+}
 
 
 std::string Simulation::getFilePath(const std::string& filename) const
