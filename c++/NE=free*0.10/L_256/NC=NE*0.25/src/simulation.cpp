@@ -245,6 +245,8 @@ void Simulation::runSingle(int run)
     // Define uniform distributions for random coordinate generation
     std::uniform_int_distribution<int> distX(0, gridSize - 1);
     std::uniform_int_distribution<int> distY(0, gridSize - 1);
+
+    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
     
     std::cout << "\n=== Selecionando pontos aleatórios no grid " << gridSize << "x" << gridSize << " ===" << std::endl;
     std::cout << "Run: " << run << std::endl;
