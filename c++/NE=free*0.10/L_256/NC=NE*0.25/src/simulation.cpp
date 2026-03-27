@@ -253,13 +253,7 @@ void Simulation::runSingle(int run)
 {
     const int gridSize = m_lattice.getWidth();
     
-    // Contadores estáticos para diagnóstico
-    static int totalCalls = 0;
-    static int huntersFound = 0;
-    static int movesMade = 0;
-    static int trailsCreated = 0;
-    
-    totalCalls++;
+ 
     
     // Gerador de números aleatórios
     std::mt19937 rng(m_seed);
