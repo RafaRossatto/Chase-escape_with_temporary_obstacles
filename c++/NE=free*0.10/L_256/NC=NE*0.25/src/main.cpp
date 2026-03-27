@@ -167,9 +167,9 @@ int main() {
     std::string base_name = "results";
     
     // Criar simulação
-    Simulation sim(lattice, runSeed, path_out, directory_name, base_name);
+    Simulation sim(lattice,escapers,chasers, runSeed, path_out, directory_name, base_name);
 
-    
+   
     std::cout << "\nArquivos criados em: " << sim.getOutputPath() << std::endl;
     std::cout << "  - results_chasers.csv" << std::endl;
     std::cout << "  - results_escapers.csv" << std::endl;

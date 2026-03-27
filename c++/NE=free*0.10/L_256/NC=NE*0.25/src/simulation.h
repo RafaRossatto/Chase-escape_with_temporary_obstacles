@@ -46,20 +46,26 @@ private:
     CellLattice& m_lattice;          /**< Reference to the cell lattice environment */
     int m_numHunters;                /**< Number of hunter (normal) cells */
     int m_numPrey;                   /**< Number of prey (cancer) cells */
-    int m_numObstacles;              /**< Number of obstacles */
+    //int m_tempObstacles;              /**< Number of obstacles */
     double m_hunterNoise;            /**< Noise parameter for hunter movement */
     double m_preyNoise;              /**< Noise parameter for prey movement */
     std::string m_fileName;          /**< Base filename for output files */
-    std::vector<Obstacle> m_obstacles; /**< Vector of obstacles */
+    std::vector<Obstacle> m_obstacles;  // Vetor de obstáculos fixos
+
     int m_hunterSearchRadius;        /**< Search radius for hunter cells */
     int m_preySearchRadius;          /**< Search radius for prey cells */
     int m_seed;             /**< Random seed for reproducibility */
     TrajectoryData m_trajectoryData; /**< Trajectory data storage */
-    std::string m_baseName;        // Nome base para os arquivos
+    //std::string m_baseName;        // Nome base para os arquivos
     std::string m_outputPath;      // ADICIONE ESTA LINHA
     // int m_chasers;                /**< Number of hunter (normal) cells */
     // int m_escapers;                   /**< Number of prey (cancer) cells */
     std::string getFilePath(const std::string& filename) const;
+    std::string m_pathOut;
+    std::string m_directoryName;
+    std::string m_baseName;
+      std::vector<temp_obs> m_tempObstacles;  // ✅ ADICIONAR ESTA LINHA!
+    
 
     std::vector<Cell> m_chasers;
     std::vector<Cell> m_escapers;
@@ -67,14 +73,14 @@ private:
     void createEmptyOutputFiles();  // Método para criar arquivos vazios
     
 
-    /**
-     * @brief Saves current positions to trajectory data
-     * @param time Current simulation time
-     * @param prey Vector of prey cells
-     * @param hunters Vector of hunter cells
-     */
-    void saveCurrentPositions(double time, const std::vector<Cell>& prey, 
-        const std::vector<Cell>& hunters, const std::vector<temp_obs>& t_obs);
+    // /**
+    //  * @brief Saves current positions to trajectory data
+    //  * @param time Current simulation time
+    //  * @param prey Vector of prey cells
+    //  * @param hunters Vector of hunter cells
+    //  */
+    // void saveCurrentPositions(double time, const std::vector<Cell>& prey, 
+    //     const std::vector<Cell>& hunters, const std::vector<temp_obs>& t_obs);
 
 public:
     /**
@@ -92,16 +98,14 @@ public:
      * @param seed Random seed (0 for random)
      */
     //Simulation(CellLattice& lattice, unsigned int seed = 0);
-    Simulation(CellLattice& lattice, unsigned int seed,
-                       const std::string& path_out, const std::string& directory_name,
-                       const std::string& base_name);
+    Simulation(CellLattice& lattice, 
+                        std::vector<Cell>& chasers,
+                        std::vector<Cell>& escapers,
+                        unsigned int seed,
+                        const std::string& path_out, 
+                        const std::string& directory_name,
+                        const std::string& base_name);
     
-
-    void saveChasersPositions();
-    void saveEscapersPositions();
-    void saveSeed();
-    void saveSimulationData();  // Salva todos os dados
-
 
     /**
      * @brief Runs a single simulation run
@@ -115,12 +119,14 @@ public:
     // Getters
     int getNumHunters() const { return m_numHunters; }
     int getNumPrey() const { return m_numPrey; }
-    int getNumObstacles() const { return m_numObstacles; }
+    //int getNumObstacles() const { return m_numObstacles; }
     std::string getFileName() const { return m_fileName; }
     unsigned int getSeed() const { return m_seed; }
     const std::vector<Cell>& getChasers() const { return m_chasers; }
     const std::vector<Cell>& getEscapers() const { return m_escapers; }
     std::string getOutputPath() const { return m_outputPath; }
+
+
 
 
     /**

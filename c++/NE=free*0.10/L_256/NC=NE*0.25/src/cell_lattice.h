@@ -154,56 +154,6 @@ class CellLattice
     
     
     /**
-     * @brief Checks if an object overlaps with objects in a list
-     * 
-     * @tparam T Type of the object to check
-     * @tparam U Type of objects in the list
-     * @param obj Object to check
-     * @param list List of objects to check against
-     * @return true if overlap exists
-     * @return false if no overlap
-     */
-    template<typename T, typename U>
-    bool overlapsWithList(const T& obj, const std::vector<U>& list) const;
-
-    /**
-     * @brief Checks general overlap with all object types
-     * 
-     * @tparam T Type of the object to check
-     * @param obj Object to check
-     * @param obstacles Vector of obstacles
-     * @param normalCells Vector of normal cells
-     * @param cancerCells Vector of cancer cells
-     * @return true if overlap exists
-     * @return false if no overlap
-     */
-    template<typename T>
-    bool generalOverlap(const T& obj,
-                        const std::vector<Obstacle>& obstacles,
-                        const std::vector<Cell>& normalCells,
-                        const std::vector<Cell>& cancerCells) const;
-       
-
-    /**
-     * @brief Checks if a position is occupied
-     * 
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param normalCells Vector of normal cells
-     * @param cancerCells Vector of cancer cells
-     * @param obstacles Vector of obstacles
-     * @param checkCancer Whether to check cancer cells
-     * @return true if position is occupied
-     * @return false if position is free
-     */
-    bool isOccupied(int x, int y,
-        const std::vector<Cell>& normalCells,
-        const std::vector<Cell>& cancerCells,
-        const std::vector<Obstacle>& obstacles,
-        bool checkCancer, std::vector<temp_obs>& tempObstacles) const;
-;
-
-    /**
      * @brief Counts targets around a position
      * 
      * @param x X coordinate
@@ -214,26 +164,9 @@ class CellLattice
      * @return int Number of targets found
      */
     int countTargetsAround(int x, int y,
-        const std::vector<Cell>& agents,
         const std::vector<std::string>& types,
         int searchRadius = 2) const;
-                    
-    /**
-     * @brief Moves a cancer cell (bad cell) according to its behavior
-     * 
-     * @param cell Cell to move
-     * @param normalCells Vector of normal cells
-     * @param cancerCells Vector of cancer cells
-     * @param obstacles Vector of obstacles
-     * @param rng Random number generator
-     * @param checkCancer Whether to check cancer cells
-     * @param searchRadius Search radius
-     */
-    void moveCancerCell(Cell& cell,
-        std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
-        std::vector<Obstacle>& obstacles,
-        std::mt19937& rng, bool checkCancer, int searchRadius, std::vector<temp_obs>& tempObstacles);
-                    
+                     
     /**
      * @brief Moves a normal cell (good cell) according to its behavior
      * 
@@ -245,32 +178,14 @@ class CellLattice
      * @param checkCancer Whether to check cancer cells
      * @param searchRadius Search radius
      */
-    int moveNormalCell(Cell& cell,
+    void moveNormalCell(Cell& cell,
         std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
-        std::vector<Obstacle>& obstacles,
-        std::mt19937& rng, bool checkCancer, int searchRadius, std::vector<temp_obs>& tempObstacles);
+        std::mt19937& rng, bool checkCancer, std::vector<temp_obs>& tempObstacles);
+
+    void moveCancerCell(Cell& cell,
+    std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
+    std::mt19937& rng, bool checkCancer,std::vector<temp_obs>& tempObstacles);
+
 };
-
-// Template implementations
-template<typename T, typename U>
-bool CellLattice::overlapsWithList(const T& obj, const std::vector<U>& list) const {
-    for (const auto& item : list) {
-        if (obj.getPositionX() == item.getPositionX() &&
-            obj.getPositionY() == item.getPositionY()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-template<typename T>
-bool CellLattice::generalOverlap(const T& obj,
-                                 const std::vector<Obstacle>& obstacles,
-                                 const std::vector<Cell>& normalCells,
-                                 const std::vector<Cell>& cancerCells) const {
-    return overlapsWithList(obj, obstacles) ||
-           overlapsWithList(obj, normalCells) ||
-           overlapsWithList(obj, cancerCells);
-}
 
 #endif // CELL_LATTICE_H

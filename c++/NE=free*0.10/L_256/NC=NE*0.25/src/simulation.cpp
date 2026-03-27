@@ -45,10 +45,22 @@ namespace fs = std::filesystem;
  * // output/sim_1/results_seed.txt
  * @endcode
  */
-Simulation::Simulation(CellLattice& lattice, unsigned int seed,
-                       const std::string& path_out, const std::string& directory_name,
+// Simulation.cpp
+Simulation::Simulation(CellLattice& lattice, 
+                       std::vector<Cell>& chasers,
+                       std::vector<Cell>& escapers,
+                       unsigned int seed,
+                       const std::string& path_out, 
+                       const std::string& directory_name,
                        const std::string& base_name)
-    : m_lattice(lattice), m_seed(seed), m_baseName(base_name)
+    : m_lattice(lattice),
+      m_chasers(chasers),
+      m_escapers(escapers),
+      m_seed(seed),
+      m_pathOut(path_out),
+      m_directoryName(directory_name),
+      m_baseName(base_name)
+
 {
     // Construct complete output path by joining base path and subdirectory
     m_outputPath = fs::path(path_out) / directory_name;
@@ -69,7 +81,7 @@ Simulation::Simulation(CellLattice& lattice, unsigned int seed,
     //createEmptyOutputFiles();
     
     // Reset trajectory data structures
-    clearTrajectoryData();
+    //clearTrajectoryData();
 }
 
 
@@ -234,61 +246,28 @@ std::string Simulation::getFilePath(const std::string& filename) const
  * // === Fim da seleção ===
  * @endcode
  */
+     // std::cout << "=== Fim da seleção ===" << std::endl;
+
+
 void Simulation::runSingle(int run) 
 {
     const int gridSize = m_lattice.getWidth();
-
-    // Initialize random number generator with simulation seed
-    //std::mt19937 rng(m_seed);
     
+    // Contadores estáticos para diagnóstico
+    static int totalCalls = 0;
+    static int huntersFound = 0;
+    static int movesMade = 0;
+    static int trailsCreated = 0;
     
-    // Define uniform distributions for random coordinate generation
-    std::uniform_int_distribution<int> distX(0, gridSize - 1);
-    std::uniform_int_distribution<int> distY(0, gridSize - 1);
-
-    std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
+    totalCalls++;
     
-    std::cout << "\n=== Selecionando pontos aleatórios no grid " << gridSize << "x" << gridSize << " ===" << std::endl;
-    std::cout << "Run: " << run << std::endl;
-    
-    // // Generate and display 20 random points on the grid
-    // for (int i = 0; i < 20; ++i) {
-    //     int randomX = distX(rng);
-    //     int randomY = distY(rng);
-        
-    //     std::string cellValue = m_lattice.getGridValue(randomX, randomY);
-        
-    //     // Display point coordinates and grid value
-    //     std::cout << "Ponto " << i+1 << ": (" << randomX << ", " << randomY << ") -> " << cellValue;
-        
-    //     // Interpret grid value as agent type
-    //     if (cellValue == "N") {
-    //         std::cout << " (CHASER)";
-    //     } else if (cellValue == "O") {
-    //         std::cout << " (ESCAPER)";
-    //     } else if (cellValue == "C") {
-    //         std::cout << " (OBSTACLE)";
-    //     } else if (cellValue == "T") {
-    //         std::cout << " (TEMP_OBSTACLE)";
-    //     } else if (cellValue == "L") {
-    //         std::cout << " (FREE)";
-    //     } else {
-    //         std::cout << " (UNKNOWN)";
-    //     }
-        
-    //     std::cout << std::endl;
-    // }
-    
-    // std::cout << "=== Fim da seleção ===" << std::endl;
-
-
-
-        // Gerador de números aleatórios
-    //std::mt19937 rng(m_seed);
-// Gerador de números aleatórios
+    // Gerador de números aleatórios
     std::mt19937 rng(m_seed);
     std::uniform_int_distribution<int> distPos(0, gridSize - 1);
-    std::uniform_int_distribution<int> distId(1, 1000);
+    
+    // Probabilidade para criação de rastro
+    const double TRAIL_PROBABILITY = 0.5;
+    std::uniform_real_distribution<double> probDist(0.0, 1.0);
     
     // Criar arquivos de saída
     std::string chaserFile = getFilePath("chasers_run" + std::to_string(run) + ".csv");
@@ -301,57 +280,157 @@ void Simulation::runSingle(int run)
     std::ofstream tempObsOut(tempObstaclesFile);
     std::ofstream seedOut(seedFile);
     
-    if (!chaserOut.is_open() || !escaperOut.is_open() || !seedOut.is_open()) {
+    if (!chaserOut.is_open() || !escaperOut.is_open() || !tempObsOut.is_open() || !seedOut.is_open()) {
         std::cerr << "[ERROR] Failed to create output files!" << std::endl;
         return;
     }
     
-    // Escrever cabeçalhos COM TEMPO
+    // Escrever cabeçalhos
     chaserOut << "time,x,y,id\n";
     escaperOut << "time,x,y,id\n";
     tempObsOut << "time,x,y,id\n";
     
-    // Salvar seed com informações
+    // Salvar seed
     seedOut << "Simulation Seed: " << m_seed << "\n";
-
-    // Para teste, vamos gerar dados em diferentes tempos
-    // Isso simula diferentes passos da simulação
+    //seedOut << "Total Steps: " << m_totalSteps << "\n";
+    seedOut << "Grid Size: " << gridSize << "x" << gridSize << "\n";
+    seedOut << "Initial Chasers: " << m_chasers.size() << "\n";
+    seedOut << "Initial Escapers: " << m_escapers.size() << "\n";
     
     double currentTime = 0.0;
     const double timeStep = 1.0;
-    const int numSteps = 5;  // Gerar 5 passos de tempo
     
-    int numChasersPerStep = 10;  // 10 chasers por passo
-    int numEscapersPerStep = 20;  // 20 escapers por passo
-    int numTempObsPerStep = 15;  // 20 escapers por passo
+    // Buffer para escrita
+    std::vector<std::string> chaserBuffer;
+    std::vector<std::string> escaperBuffer;
+    std::vector<std::string> tempObsBuffer;
+    chaserBuffer.reserve(10000);
+    escaperBuffer.reserve(10000);
+    tempObsBuffer.reserve(10000);
     
-    for (int step = 0; step < numSteps; ++step) {
-        currentTime = step * timeStep;
-        
-        // Gerar posições para chasers neste tempo
-        for (int i = 0; i < numChasersPerStep; ++i) {
-            int x = distPos(rng);
-            int y = distPos(rng);
-            int id = distId(rng);
-            chaserOut << currentTime << "," << x << "," << y << "," << id << "\n";
-        }
-        
-        // Gerar posições para escapers neste tempo
-        for (int i = 0; i < numEscapersPerStep; ++i) {
-            int x = distPos(rng);
-            int y = distPos(rng);
-            int id = distId(rng);
-            escaperOut << currentTime << "," << x << "," << y << "," << id << "\n";
-        }
+    // Progresso
+    const int PROGRESS_INTERVAL = 10000;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
 
-        // Gerar posições para Obstaculos temporários
-        for (int i = 0; i < numTempObsPerStep; ++i) {
-            int x = distPos(rng);
-            int y = distPos(rng);
-            int id = distId(rng);
-            tempObsOut << currentTime << "," << x << "," << y << "," << id << "\n";
+    int m_totalSteps = 1e6;
+
+    std::cout << "\n=== Starting Simulation - Run " << run << " ===" << std::endl;
+    std::cout << "Total steps: " << m_totalSteps << std::endl;
+    std::cout << "Initial chasers: " << m_chasers.size() << std::endl;
+    std::cout << "Initial escapers: " << m_escapers.size() << std::endl;
+    std::cout << "Progress: " << std::flush;
+    
+    // Loop principal
+    for (int step = 0; step < m_totalSteps; ++step) {
+        currentTime = step;
+        
+        // Mostrar progresso
+        if (step % PROGRESS_INTERVAL == 0 && step > 0) {
+            double progress = (double)step / m_totalSteps * 100.0;
+            auto currentTimePoint = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTimePoint - startTime).count();
+            
+            if (elapsed > 0) {
+                double stepsPerSecond = step / elapsed;
+                double eta = (m_totalSteps - step) / stepsPerSecond;
+                int hours = eta / 3600;
+                int minutes = (eta - hours * 3600) / 60;
+                int seconds = eta - hours * 3600 - minutes * 60;
+                
+                std::cout << "\rProgress: " << std::fixed << std::setprecision(1) << progress 
+                          << "% | Step: " << step << "/" << m_totalSteps 
+                          << " | " << (int)stepsPerSecond << " steps/s"
+                          << " | ETA: " << hours << "h " << minutes << "m " << seconds << "s" 
+                          << std::flush;
+            } else {
+                std::cout << "\rProgress: " << std::fixed << std::setprecision(1) << progress << "%" << std::flush;
+            }
+        }
+        
+        // ESCOLHER POSIÇÃO ALEATÓRIA
+        int randomX = distPos(rng);
+        int randomY = distPos(rng);
+        std::string cellType = m_lattice.getGridValue(randomX, randomY);
+        
+        // SE FOR CHASER (N)
+        if (cellType == "N") {
+            // Encontrar o chaser na posição
+            for (auto& chaser : m_chasers) {
+                if (chaser.getPositionX() == randomX && chaser.getPositionY() == randomY) {
+                                m_lattice.moveNormalCell(chaser, 
+                                     m_chasers,      // normalCells
+                                     m_escapers,     // cancerCells
+                                     rng, 
+                                     true,          // checkCancer
+                                     m_tempObstacles);
+                    
+                    break;
+                }
+            }
+        }
+        // SE FOR ESCAPER (O)
+        else if (cellType == "O") {
+            // Encontrar o escaper na posição
+            for (auto& escaper : m_escapers) {
+                if (escaper.getPositionX() == randomX && escaper.getPositionY() == randomY) {
+                    m_lattice.moveCancerCell                    (escaper, 
+                                     m_chasers,      // normalCells
+                                     m_escapers,     // cancerCells
+                                     rng, 
+                                     false,          // checkCancer
+                                     m_tempObstacles);
+                    
+                    break;
+                }
+            }
+        }
+        // OUTROS TIPOS (L, T, B) - não faz nada
+               
+        // EXPORTAR DADOS (a cada N passos)
+        const int EXPORT_INTERVAL = 100;
+        if (step % EXPORT_INTERVAL == 0 || step == m_totalSteps - 1) {
+            // Exportar chasers
+            for (const auto& chaser : m_chasers) {
+                chaserBuffer.push_back(std::to_string(currentTime) + "," + 
+                                       std::to_string(chaser.getPositionX()) + "," + 
+                                       std::to_string(chaser.getPositionY()) + "," + 
+                                       std::to_string(chaser.getId()) + "\n");
+            }
+            
+            // Exportar escapers
+            for (const auto& escaper : m_escapers) {
+                escaperBuffer.push_back(std::to_string(currentTime) + "," + 
+                                        std::to_string(escaper.getPositionX()) + "," + 
+                                        std::to_string(escaper.getPositionY()) + "," + 
+                                        std::to_string(escaper.getId()) + "\n");
+            }
+            
+            // Exportar obstáculos temporários
+            for (const auto& t_obs : m_tempObstacles) {
+                tempObsBuffer.push_back(std::to_string(currentTime) + "," + 
+                                        std::to_string(t_obs.getPositionX()) + "," + 
+                                        std::to_string(t_obs.getPositionY()) + "," + 
+                                        std::to_string(t_obs.getId()) + "\n");
+            }
+            
+            // Escrever buffers em lote
+            if (chaserBuffer.size() >= 5000) {
+                for (const auto& line : chaserBuffer) chaserOut << line;
+                for (const auto& line : escaperBuffer) escaperOut << line;
+                for (const auto& line : tempObsBuffer) tempObsOut << line;
+                
+                chaserBuffer.clear();
+                escaperBuffer.clear();
+                tempObsBuffer.clear();
+            }
         }
     }
+    
+    // Escrever dados restantes
+    for (const auto& line : chaserBuffer) chaserOut << line;
+    for (const auto& line : escaperBuffer) escaperOut << line;
+    for (const auto& line : tempObsBuffer) tempObsOut << line;
     
     // Fechar arquivos
     chaserOut.close();
@@ -359,21 +438,21 @@ void Simulation::runSingle(int run)
     tempObsOut.close();
     seedOut.close();
     
-    // Mostrar informações
-    std::cout << "\n=== Teste de Exportação - Run " << run << " ===" << std::endl;
-    std::cout << "Seed: " << m_seed << std::endl;
-    std::cout << "Grid size: " << gridSize << "x" << gridSize << std::endl;
-    std::cout << "Time steps gerados: " << numSteps << " (0 a " << (numSteps-1)*timeStep << ")" << std::endl;
-    std::cout << "Chasers por passo: " << numChasersPerStep << " (total: " << numSteps * numChasersPerStep << ")" << std::endl;
-    std::cout << "Escapers por passo: " << numEscapersPerStep << " (total: " << numSteps * numEscapersPerStep << ")" << std::endl;
-    std::cout << "\nArquivos criados:" << std::endl;
-    std::cout << "  - " << chaserFile << std::endl;
-    std::cout << "  - " << escaperFile << std::endl;
-    std::cout << "  - " << seedFile << std::endl;
-    std::cout << "=== Fim do Teste ===" << std::endl;
+    // Estatísticas finais
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto totalElapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+    
+    std::cout << "\n\n=== Simulation Complete - Run " << run << " ===" << std::endl;
+    std::cout << "Total steps: " << m_totalSteps << std::endl;
+    std::cout << "Total time: " << totalElapsed << " seconds" << std::endl;
+    if (totalElapsed > 0) {
+        std::cout << "Average speed: " << (m_totalSteps / totalElapsed) << " steps/second" << std::endl;
+    }
+    std::cout << "Final chasers: " << m_chasers.size() << std::endl;
+    std::cout << "Final escapers: " << m_escapers.size() << std::endl;
+    std::cout << "Final temp obstacles: " << m_tempObstacles.size() << std::endl;
+    std::cout << "================================" << std::endl;
 }
-
-
 
 
 
