@@ -87,45 +87,45 @@ int main() {
     std:: cin.get();
     
 
-    // std::cout << "Bloco escapers\n";
-    // if (!escapers.empty()) {
-    //     std::cout << "\nPrimeiras 10 células:\n";
-    //     for (size_t i = 0; i < std::min(escapers.size(), size_t(10)); i++) {
-    //         const auto& cell = escapers[i];
-    //         std::cout << "  [" << i << "] ID=" << cell.getId() 
-    //                   << " Pos=(" << cell.getPositionX() 
-    //                   << "," << cell.getPositionY() << ")\n";
-    //     }
+    std::cout << "Bloco escapers\n";
+    if (!escapers.empty()) {
+        std::cout << "\nPrimeiras 10 células:\n";
+        for (size_t i = 0; i < std::min(escapers.size(), size_t(10)); i++) {
+            const auto& cell = escapers[i];
+            std::cout << "  [" << i << "] ID=" << cell.getId() 
+                      << " Pos=(" << cell.getPositionX() 
+                      << "," << cell.getPositionY() << ")\n";
+        }
         
-    //     std::cout << "\nÚltimas 10 células:\n";
-    //     size_t start = escapers.size() > 10 ? escapers.size() - 10 : 0;
-    //     for (size_t i = start; i < escapers.size(); i++) {
-    //         const auto& cell = escapers[i];
-    //         std::cout << "  [" << i << "] ID=" << cell.getId() 
-    //                   << " Pos=(" << cell.getPositionX() 
-    //                   << "," << cell.getPositionY() << ")\n";
-    //     }
-    // }
+        std::cout << "\nÚltimas 10 células:\n";
+        size_t start = escapers.size() > 10 ? escapers.size() - 10 : 0;
+        for (size_t i = start; i < escapers.size(); i++) {
+            const auto& cell = escapers[i];
+            std::cout << "  [" << i << "] ID=" << cell.getId() 
+                      << " Pos=(" << cell.getPositionX() 
+                      << "," << cell.getPositionY() << ")\n";
+        }
+    }
 
-    // std::cout << "Bloco chasers\n";
-    // if (!chasers.empty()) {
-    //     std::cout << "\nPrimeiras 10 células:\n";
-    //     for (size_t i = 0; i < std::min(chasers.size(), size_t(10)); i++) {
-    //         const auto& cell = chasers[i];
-    //         std::cout << "  [" << i << "] ID=" << cell.getId() 
-    //                   << " Pos=(" << cell.getPositionX() 
-    //                   << "," << cell.getPositionY() << ")\n";
-    //     }
+    std::cout << "Bloco chasers\n";
+    if (!chasers.empty()) {
+        std::cout << "\nPrimeiras 10 células:\n";
+        for (size_t i = 0; i < std::min(chasers.size(), size_t(10)); i++) {
+            const auto& cell = chasers[i];
+            std::cout << "  [" << i << "] ID=" << cell.getId() 
+                      << " Pos=(" << cell.getPositionX() 
+                      << "," << cell.getPositionY() << ")\n";
+        }
         
-    //     std::cout << "\nÚltimas 10 células:\n";
-    //     size_t start = chasers.size() > 10 ? chasers.size() - 10 : 0;
-    //     for (size_t i = start; i < chasers.size(); i++) {
-    //         const auto& cell = chasers[i];
-    //         std::cout << "  [" << i << "] ID=" << cell.getId() 
-    //                   << " Pos=(" << cell.getPositionX() 
-    //                   << "," << cell.getPositionY() << ")\n";
-    //     }
-    // }
+        std::cout << "\nÚltimas 10 células:\n";
+        size_t start = chasers.size() > 10 ? chasers.size() - 10 : 0;
+        for (size_t i = start; i < chasers.size(); i++) {
+            const auto& cell = chasers[i];
+            std::cout << "  [" << i << "] ID=" << cell.getId() 
+                      << " Pos=(" << cell.getPositionX() 
+                      << "," << cell.getPositionY() << ")\n";
+        }
+    }
     
         // Chamar a verificação
     // Verificar dados
