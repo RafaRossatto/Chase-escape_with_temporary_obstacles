@@ -293,10 +293,12 @@ void Simulation::runSingle(int run)
     // Criar arquivos de saída
     std::string chaserFile = getFilePath("chasers_run" + std::to_string(run) + ".csv");
     std::string escaperFile = getFilePath("escapers_run" + std::to_string(run) + ".csv");
+    std::string tempObstaclesFile = getFilePath("tempObs_run" + std::to_string(run) + ".csv");
     std::string seedFile = getFilePath("seed_run" + std::to_string(run) + ".txt");
     
     std::ofstream chaserOut(chaserFile);
     std::ofstream escaperOut(escaperFile);
+    std::ofstream tempObsOut(tempObstaclesFile);
     std::ofstream seedOut(seedFile);
     
     if (!chaserOut.is_open() || !escaperOut.is_open() || !seedOut.is_open()) {
@@ -307,6 +309,7 @@ void Simulation::runSingle(int run)
     // Escrever cabeçalhos COM TEMPO
     chaserOut << "time,x,y,id\n";
     escaperOut << "time,x,y,id\n";
+    tempObsOut << "time,x,y,id\n";
     
     // Salvar seed com informações
     seedOut << "Simulation Seed: " << m_seed << "\n";
@@ -320,6 +323,7 @@ void Simulation::runSingle(int run)
     
     int numChasersPerStep = 10;  // 10 chasers por passo
     int numEscapersPerStep = 20;  // 20 escapers por passo
+    int numTempObsPerStep = 15;  // 20 escapers por passo
     
     for (int step = 0; step < numSteps; ++step) {
         currentTime = step * timeStep;
@@ -339,11 +343,20 @@ void Simulation::runSingle(int run)
             int id = distId(rng);
             escaperOut << currentTime << "," << x << "," << y << "," << id << "\n";
         }
+
+        // Gerar posições para Obstaculos temporários
+        for (int i = 0; i < numTempObsPerStep; ++i) {
+            int x = distPos(rng);
+            int y = distPos(rng);
+            int id = distId(rng);
+            tempObsOut << currentTime << "," << x << "," << y << "," << id << "\n";
+        }
     }
     
     // Fechar arquivos
     chaserOut.close();
     escaperOut.close();
+    tempObsOut.close();
     seedOut.close();
     
     // Mostrar informações
