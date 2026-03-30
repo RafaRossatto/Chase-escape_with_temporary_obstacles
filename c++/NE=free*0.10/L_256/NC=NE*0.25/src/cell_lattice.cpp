@@ -5,7 +5,7 @@
 #include <array> 
 #include <optional>
 #include "temp_obs.h"
-
+#include "globals.hpp"
 /**
  * @brief Constructs a new CellLattice object with the specified dimensions
  * 
@@ -713,7 +713,7 @@ void CellLattice::moveCancerCell(Cell& cell,
         // std::cout << "✅ ESCAPER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
         
         // CRIAR RASTRO (apenas se estiver fugindo de hunter adjacente)
-        const double TRAIL_PROBABILITY = 0.5;
+        //const double TRAIL_PROBABILITY = 0.5;
         std::uniform_real_distribution<double> probDist(0.0, 1.0);
         double roll = probDist(rng);
         

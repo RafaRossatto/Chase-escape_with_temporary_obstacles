@@ -151,7 +151,9 @@ void Simulation::createEmptyOutputFiles()
     std::string seedFile = getFilePath("seed.txt");
     std::ofstream seedOut(seedFile);
     if (seedOut.is_open()) {
-        seedOut << "Seed: " << m_seed << "\n";
+        seedOut << "Seed: " << static_cast<unsigned int>(m_seed) << "\n";
+        // Ou use:
+        // seedOut << "Seed: " << (unsigned int)m_seed << "\n";
         seedOut.close();
         std::cout << "[INFO] Created seed file: " << seedFile << std::endl;
     } else {
@@ -405,4 +407,5 @@ void Simulation::runSingle(int run)
     std::cout << "Captured escapers: " << captured << std::endl;
     std::cout << "Final temp obstacles: " << m_tempObstacles.size() << std::endl;
     std::cout << "================================" << std::endl;
+    // std:: cin.get();
 }
