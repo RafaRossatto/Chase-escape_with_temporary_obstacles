@@ -212,7 +212,8 @@ void Cell::changePosition(int newX, int newY)
 void Cell::randomWalk(int& x, int& y, Direction move) 
 {
     int originalX = x, originalY = y; // Store original position
-
+    WIDTH = 256;
+    HEIGHT = WIDTH;
     switch (move) {
         case SOUTH:
             y = (y - 1 + HEIGHT) % HEIGHT;

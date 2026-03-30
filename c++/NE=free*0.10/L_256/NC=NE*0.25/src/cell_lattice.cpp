@@ -645,101 +645,240 @@ void CellLattice::moveCancerCell(Cell& cell,
     int x = cell.getPositionX();
     int y = cell.getPositionY();
     
+    std::cout << "\n========================================\n";
+    std::cout << "🎯 MOVENDO ESCAPER na posição (" << x << "," << y << ")" << std::endl;
+    std::cout << "========================================\n";
+    std::cin.get();
+    
     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
     std::array<Direction, 4> shuffledDirections = directions;
     std::shuffle(shuffledDirections.begin(), shuffledDirections.end(), rng);
     
-    // 1. DETECTAR HUNTER ADJACENTE
+    // 1. DETECTAR HUNTER ADJACENTE (distância 1)
     int hunterIndex = -1;
+    int hunterX = -1, hunterY = -1;
     
+    std::cout << "🔍 Verificando hunters ADJACENTES (distância 1):\n";
     for (int i = 0; i < 4; i++) {
         Direction dir = shuffledDirections[i];
         int adjX = x, adjY = y;
         cell.randomWalk(adjX, adjY, dir);
         
-        if (getGridValue(adjX, adjY) == "N") {
+        std::string dirName;
+        switch(dir) {
+            case NORTH: dirName = "NORTE"; break;
+            case SOUTH: dirName = "SUL"; break;
+            case EAST: dirName = "LESTE"; break;
+            case WEST: dirName = "OESTE"; break;
+        }
+        
+        std::string gridVal = getGridValue(adjX, adjY);
+        std::cout << "  " << dirName << " (" << adjX << "," << adjY << ") = '" << gridVal << "'";
+        
+        if (gridVal == "N") {
             hunterIndex = i;
+            hunterX = adjX;
+            hunterY = adjY;
+            std::cout << " <- HUNTER ENCONTRADO!" << std::endl;
             break;
         }
+        std::cout << std::endl;
     }
+    std::cin.get();
     
     std::optional<std::pair<int, int>> newPosition = std::nullopt;
     bool isFleeing = false;
     
-    // 2. CASO 1: TEM HUNTER
+    // 2. CASO 1: TEM HUNTER ADJACENTE → FUGE
     if (hunterIndex != -1) {
         isFleeing = true;
-        std::cout << "[DEBUG] ESCAPER AT (" << x << "," << y << ") - HUNTER FOUND! isFleeing=true" << std::endl;
+        std::cout << "\n⚠️ HUNTER ADJACENTE encontrado em (" << hunterX << "," << hunterY << ")!" << std::endl;
+        std::cout << "🦁 ESCAPER VAI FUGIR na direção oposta!" << std::endl;
+        std::cin.get();
         
         Direction hunterDir = shuffledDirections[hunterIndex];
         
         Direction oppositeDir;
+        std::string oppDirName;
         switch(hunterDir) {
-            case NORTH: oppositeDir = SOUTH; break;
-            case SOUTH: oppositeDir = NORTH; break;
-            case EAST:  oppositeDir = WEST; break;
-            case WEST:  oppositeDir = EAST; break;
+            case NORTH: oppositeDir = SOUTH; oppDirName = "SUL"; break;
+            case SOUTH: oppositeDir = NORTH; oppDirName = "NORTE"; break;
+            case EAST:  oppositeDir = WEST; oppDirName = "OESTE"; break;
+            case WEST:  oppositeDir = EAST; oppDirName = "LESTE"; break;
         }
+        
+        std::cout << "  Direção do hunter: " << (hunterDir == NORTH ? "NORTE" : hunterDir == SOUTH ? "SUL" : hunterDir == EAST ? "LESTE" : "OESTE") << std::endl;
+        std::cout << "  Direção oposta (fuga): " << oppDirName << std::endl;
+        std::cin.get();
         
         int newX = x, newY = y;
         cell.randomWalk(newX, newY, oppositeDir);
         
-        if (getGridValue(newX, newY) == "L") {
+        std::string targetType = getGridValue(newX, newY);
+        std::cout << "  Posição de fuga: (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
+        
+        if (targetType == "L") {
             newPosition = std::make_pair(newX, newY);
-            std::cout << "[DEBUG] Will move to opposite direction (" << newX << "," << newY << ")" << std::endl;
+            std::cout << "  ✅ Posição LIVRE! Vai se mover para (" << newX << "," << newY << ")" << std::endl;
         } else {
-            std::cout << "[DEBUG] Opposite direction occupied! Will NOT move." << std::endl;
+            std::cout << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
         }
+        std::cin.get();
     } 
+    // 3. CASO 2: NÃO TEM HUNTER ADJACENTE → VERIFICA HUNTER NO RAIO
     else {
-        std::cout << "[DEBUG] ESCAPER AT (" << x << "," << y << ") - NO HUNTER" << std::endl;
+        // Verificar se existe hunter dentro do searchRadius (2)
+        int currentDensity = countTargetsAround(x, y, {"N"}, 2);
+        
+        std::cout << "\n✅ NENHUM hunter adjacente encontrado." << std::endl;
+        std::cout << "📊 Densidade de hunters no raio 2: " << currentDensity << std::endl;
+        std::cin.get();
+        
+        if (currentDensity > 0) {
+            // Tem hunter no raio → usa estratégia de densidade
+            std::cout << "🔍 HUNTERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
+            std::cout << "  (Movendo para direção com MENOR densidade de hunters)" << std::endl;
+            std::cin.get();
+            
+            int minDensity = currentDensity;
+            std::vector<Direction> bestDirections;
+            
+            for (Direction dir : shuffledDirections) {
+                int tempX = x, tempY = y;
+                cell.randomWalk(tempX, tempY, dir);
+                
+                std::string cellType = getGridValue(tempX, tempY);
+                if (cellType != "L") {
+                    continue;
+                }
+                
+                int neighborDensity = countTargetsAround(tempX, tempY, {"N"}, 2);
+                
+                std::string dirName;
+                switch(dir) {
+                    case NORTH: dirName = "NORTE"; break;
+                    case SOUTH: dirName = "SUL"; break;
+                    case EAST: dirName = "LESTE"; break;
+                    case WEST: dirName = "OESTE"; break;
+                }
+                std::cout << "  " << dirName << ": densidade = " << neighborDensity << std::endl;
+                
+                if (neighborDensity < minDensity) {
+                    minDensity = neighborDensity;
+                    bestDirections.clear();
+                    bestDirections.push_back(dir);
+                } else if (neighborDensity == minDensity) {
+                    bestDirections.push_back(dir);
+                }
+            }
+            
+            if (!bestDirections.empty()) {
+                std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
+                Direction bestDir = bestDirections.front();
+                
+                int newX = x, newY = y;
+                cell.randomWalk(newX, newY, bestDir);
+                newPosition = std::make_pair(newX, newY);
+                
+                std::string dirName;
+                switch(bestDir) {
+                    case NORTH: dirName = "NORTE"; break;
+                    case SOUTH: dirName = "SUL"; break;
+                    case EAST: dirName = "LESTE"; break;
+                    case WEST: dirName = "OESTE"; break;
+                }
+                std::cout << "  ✅ Melhor direção: " << dirName << " para (" << newX << "," << newY << ")" << std::endl;
+            } else {
+                std::cout << "  ❌ Nenhuma direção livre encontrada!" << std::endl;
+            }
+            std::cin.get();
+            
+        } else {
+            // Não tem hunter no raio → movimento aleatório
+            std::cout << "🎲 NENHUM hunter no raio! Usando MOVIMENTO ALEATÓRIO..." << std::endl;
+            std::cin.get();
+            
+            std::uniform_int_distribution<int> dirDist(0, 3);
+            Direction randomDir = static_cast<Direction>(dirDist(rng));
+            
+            int newX = x, newY = y;
+            cell.randomWalk(newX, newY, randomDir);
+            
+            std::string targetType = getGridValue(newX, newY);
+            std::string dirName;
+            switch(randomDir) {
+                case NORTH: dirName = "NORTE"; break;
+                case SOUTH: dirName = "SUL"; break;
+                case EAST: dirName = "LESTE"; break;
+                case WEST: dirName = "OESTE"; break;
+            }
+            std::cout << "  Direção aleatória: " << dirName << " (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
+            
+            if (targetType == "L") {
+                newPosition = std::make_pair(newX, newY);
+                std::cout << "  ✅ Posição LIVRE! Vai se mover." << std::endl;
+            } else {
+                std::cout << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
+            }
+            std::cin.get();
+        }
     }
     
-    // 3. APLICAR MOVIMENTO
+    // 4. APLICAR MOVIMENTO
     if (newPosition.has_value()) {
         auto [newX, newY] = newPosition.value();
         
+        std::cout << "\n🚀 APLICANDO MOVIMENTO..." << std::endl;
+        
         if (getGridValue(newX, newY) != "L") {
-            std::cout << "[DEBUG] Target not free anymore!" << std::endl;
+            std::cout << "  ❌ ERRO: Posição destino não está mais livre! Abortando." << std::endl;
             return;
         }
         
         if (getGridValue(x, y) != "O") {
-            std::cout << "[DEBUG] Source not occupied by escaper!" << std::endl;
+            std::cout << "  ❌ ERRO: Posição origem não tem escaper! Abortando." << std::endl;
             return;
         }
         
         // Move
+        std::cout << "  Limpando posição antiga (" << x << "," << y << ")" << std::endl;
         setGridValue(x, y, "L");
+        
+        std::cout << "  Movendo escaper para (" << newX << "," << newY << ")" << std::endl;
         cell.changePosition(newX, newY);
+        
+        std::cout << "  Marcando nova posição como 'O'" << std::endl;
         setGridValue(newX, newY, "O");
         
-        std::cout << "[DEBUG] MOVED from (" << x << "," << y << ") to (" << newX << "," << newY << ")" << std::endl;
+        std::cout << "✅ ESCAPER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
         
-        // CRIAR RASTRO
+        // CRIAR RASTRO (apenas se estiver fugindo de hunter adjacente)
         const double TRAIL_PROBABILITY = 0.5;
         std::uniform_real_distribution<double> probDist(0.0, 1.0);
         double roll = probDist(rng);
         
-        std::cout << "[DEBUG] Creating trail? isFleeing=" << isFleeing << " roll=" << roll << std::endl;
+        std::cout << "\n💨 CRIANDO RASTRO? isFleeing=" << isFleeing << " roll=" << roll << std::endl;
         
         if (isFleeing && roll <= TRAIL_PROBABILITY) {
             int newId = tempObstacles.size() + 1;
             tempObstacles.emplace_back("T", newId, x, y);
             setGridValue(x, y, "T");
-            std::cout << "[DEBUG] ✅ TRAIL CREATED at (" << x << "," << y << ") ID=" << newId << std::endl;
+            std::cout << "✅ RASTRO CRIADO na posição antiga (" << x << "," << y << ") ID=" << newId << std::endl;
+        } else if (isFleeing) {
+            std::cout << "❌ NÃO CRIOU RASTRO: probabilidade falhou (" << roll << " > " << TRAIL_PROBABILITY << ")" << std::endl;
         } else {
-            if (!isFleeing) {
-                std::cout << "[DEBUG] ❌ NO TRAIL: isFleeing=false" << std::endl;
-            } else {
-                std::cout << "[DEBUG] ❌ NO TRAIL: probability failed (" << roll << " > " << TRAIL_PROBABILITY << ")" << std::endl;
-            }
+            std::cout << "❌ NÃO CRIOU RASTRO: não estava fugindo de hunter adjacente (isFleeing=false)" << std::endl;
         }
     } else {
-        std::cout << "[DEBUG] NO MOVEMENT (newPosition is null)" << std::endl;
+        std::cout << "\n❌ NENHUM MOVIMENTO (newPosition is null)" << std::endl;
+        std::cout << "   O escaper ficou na posição (" << x << "," << y << ")" << std::endl;
     }
+    
+    std::cout << "\n========================================\n";
+    std::cout << "🏁 FIM DO MOVIMENTO DO ESCAPER" << std::endl;
+    std::cout << "========================================\n";
+    std::cin.get();
 }
-
 
 /**
  * @brief Counts targets around a position using grid (O(radius²) instead of O(n))

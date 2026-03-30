@@ -295,7 +295,7 @@ std::cin.get();
     // std::cout << "  - results_chasers.csv" << std::endl;
     // std::cout << "  - results_escapers.csv" << std::endl;
     // std::cout << "  - results_seed.txt" << std::endl;
-    // sim.runSingle(1);
+    sim.runSingle(1);
 
    
     return 0;
