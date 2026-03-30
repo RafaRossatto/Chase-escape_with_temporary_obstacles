@@ -3,7 +3,7 @@
 #include "cell_lattice.h"
 #include "cell.h"
 #include "simulation.h"
-
+#include "globals.hpp"
 int main() {
 
     // // Vector to store results from all runs
@@ -291,12 +291,8 @@ std::cin.get();
     Simulation sim(lattice,chasers,escapers, runSeed, path_out, directory_name, base_name);
 
    
-    // std::cout << "\nArquivos criados em: " << sim.getOutputPath() << std::endl;
-    // std::cout << "  - results_chasers.csv" << std::endl;
-    // std::cout << "  - results_escapers.csv" << std::endl;
-    // std::cout << "  - results_seed.txt" << std::endl;
+
     sim.runSingle(1);
 
-   
     return 0;
 }

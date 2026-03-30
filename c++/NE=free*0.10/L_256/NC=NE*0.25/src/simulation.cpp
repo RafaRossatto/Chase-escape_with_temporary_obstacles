@@ -5,6 +5,7 @@
 #include "temp_obs.h"
 #include "cell_lattice.h"
 #include <filesystem>
+#include "globals.hpp"
 
 namespace fs = std::filesystem;
 
@@ -253,14 +254,12 @@ void Simulation::runSingle(int run)
 {
     const int gridSize = m_lattice.getWidth();
     
- 
-    
     // Gerador de números aleatórios
     std::mt19937 rng(m_seed);
     std::uniform_int_distribution<int> distPos(0, gridSize - 1);
     
     // Probabilidade para criação de rastro
-    const double TRAIL_PROBABILITY = 0.5;
+    // const double TRAIL_PROBABILITY = 0.5;
     std::uniform_real_distribution<double> probDist(0.0, 1.0);
     
     // Criar arquivos de saída
@@ -301,12 +300,7 @@ void Simulation::runSingle(int run)
     chaserBuffer.reserve(10000);
     escaperBuffer.reserve(10000);
     tempObsBuffer.reserve(10000);
-    
-    // Progresso
-    const int PROGRESS_INTERVAL = 10000;
-    auto startTime = std::chrono::high_resolution_clock::now();
-    
-
+      
     int m_totalSteps = 1e6;
 
     std::cout << "\n=== Starting Simulation - Run " << run << " ===" << std::endl;
@@ -317,31 +311,6 @@ void Simulation::runSingle(int run)
     
     // Loop principal
     for (int step = 0; step < m_totalSteps; ++step) {
-        currentTime = step;
-        
-        // Mostrar progresso
-        if (step % PROGRESS_INTERVAL == 0 && step > 0) {
-            double progress = (double)step / m_totalSteps * 100.0;
-            auto currentTimePoint = std::chrono::high_resolution_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTimePoint - startTime).count();
-            
-            if (elapsed > 0) {
-                double stepsPerSecond = step / elapsed;
-                double eta = (m_totalSteps - step) / stepsPerSecond;
-                int hours = eta / 3600;
-                int minutes = (eta - hours * 3600) / 60;
-                int seconds = eta - hours * 3600 - minutes * 60;
-                
-                std::cout << "\rProgress: " << std::fixed << std::setprecision(1) << progress 
-                          << "% | Step: " << step << "/" << m_totalSteps 
-                          << " | " << (int)stepsPerSecond << " steps/s"
-                          << " | ETA: " << hours << "h " << minutes << "m " << seconds << "s" 
-                          << std::flush;
-            } else {
-                std::cout << "\rProgress: " << std::fixed << std::setprecision(1) << progress << "%" << std::flush;
-            }
-        }
-        
         // ESCOLHER POSIÇÃO ALEATÓRIA
         int randomX = distPos(rng);
         int randomY = distPos(rng);
@@ -358,7 +327,6 @@ void Simulation::runSingle(int run)
                                      rng, 
                                      true,          // checkCancer
                                      m_tempObstacles);
-                    
                     break;
                 }
             }
@@ -374,7 +342,6 @@ void Simulation::runSingle(int run)
                                      rng, 
                                      false,          // checkCancer
                                      m_tempObstacles);
-                    
                     break;
                 }
             }
@@ -382,11 +349,11 @@ void Simulation::runSingle(int run)
         // OUTROS TIPOS (L, T, B) - não faz nada
                
         // EXPORTAR DADOS (a cada N passos)
-        const int EXPORT_INTERVAL = 100;
+        //const int EXPORT_INTERVAL = 500;
         if (step % EXPORT_INTERVAL == 0 || step == m_totalSteps - 1) {
             // Exportar chasers
             for (const auto& chaser : m_chasers) {
-                chaserBuffer.push_back(std::to_string(currentTime) + "," + 
+                chaserBuffer.push_back(std::to_string(step) + "," + 
                                        std::to_string(chaser.getPositionX()) + "," + 
                                        std::to_string(chaser.getPositionY()) + "," + 
                                        std::to_string(chaser.getId()) + "\n");
@@ -394,7 +361,7 @@ void Simulation::runSingle(int run)
             
             // Exportar escapers
             for (const auto& escaper : m_escapers) {
-                escaperBuffer.push_back(std::to_string(currentTime) + "," + 
+                escaperBuffer.push_back(std::to_string(step) + "," + 
                                         std::to_string(escaper.getPositionX()) + "," + 
                                         std::to_string(escaper.getPositionY()) + "," + 
                                         std::to_string(escaper.getId()) + "\n");
@@ -402,7 +369,7 @@ void Simulation::runSingle(int run)
             
             // Exportar obstáculos temporários
             for (const auto& t_obs : m_tempObstacles) {
-                tempObsBuffer.push_back(std::to_string(currentTime) + "," + 
+                tempObsBuffer.push_back(std::to_string(step) + "," + 
                                         std::to_string(t_obs.getPositionX()) + "," + 
                                         std::to_string(t_obs.getPositionY()) + "," + 
                                         std::to_string(t_obs.getId()) + "\n");
@@ -431,151 +398,11 @@ void Simulation::runSingle(int run)
     escaperOut.close();
     tempObsOut.close();
     seedOut.close();
-    
-    // Estatísticas finais
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto totalElapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-    
-    std::cout << "\n\n=== Simulation Complete - Run " << run << " ===" << std::endl;
-    std::cout << "Total steps: " << m_totalSteps << std::endl;
-    std::cout << "Total time: " << totalElapsed << " seconds" << std::endl;
-    if (totalElapsed > 0) {
-        std::cout << "Average speed: " << (m_totalSteps / totalElapsed) << " steps/second" << std::endl;
-    }
+
+    int initialEscapers = 6553; // ou use uma variável guardada no início
+    int captured = initialEscapers - m_escapers.size();
     std::cout << "Final chasers: " << m_chasers.size() << std::endl;
-    std::cout << "Final escapers: " << m_escapers.size() << std::endl;
+    std::cout << "Captured escapers: " << captured << std::endl;
     std::cout << "Final temp obstacles: " << m_tempObstacles.size() << std::endl;
     std::cout << "================================" << std::endl;
 }
-
-
-
-
-/**
- * @brief Runs a single simulation run
- */
-// SimulationResult Simulation::runSingle(int run, std::mt19937& rng) 
-// {
-//     // Clear previous trajectory data
-//     clearTrajectoryData();
-    
-//     const int gridSize = m_lattice.getWidth();
-
-//     std::vector<Cell> localHunters, localPrey;
-       
-//     std::uniform_int_distribution<int> distX(0, gridSize - 1);
-//     std::uniform_int_distribution<int> distY(0, gridSize - 1);
-
-//     double time = 0.0;
-//     const double recordingInterval = 1.0;
-//     double nextRecordingTime = recordingInterval;
-//     bool checkPrey;
-
-
-//     std::vector<temp_obs> tempObstacles; // creating the vector to the temp_obstacles
-//     int value = 10; // Max life for a temp_obs
-
-//     saveCurrentPositions(time, localPrey, localHunters, tempObstacles);
-
-//     // Evolution file for prey count
-//     std::ofstream evolutionFile(m_fileName + "_run_" + std::to_string(run) + "_prey_per_step.csv");
-//     if (!evolutionFile.is_open()) {
-//         logError("Error creating evolution file for run " + std::to_string(run));
-//         return {0.0, 0};
-//     }
-
-//     evolutionFile << "step,living_prey\n";
-//     evolutionFile << time << "," << localPrey.size() << "\n";
-
-//     std::ofstream captureFile(m_fileName + "_run_" + std::to_string(run) + "_captures.csv");
-//     if (!captureFile.is_open()) 
-//     {
-//         logError("Error creating capture log file for run " + std::to_string(run));
-//         return {0.0, 0};
-//     }
-//     captureFile << "timestep,hunter_id,prey_id\n";
-
-//     // Main simulation loop
-//     while (time < 1.0e5) {
-//         // Stop condition: all prey are captured or inaccessible
-
-//         //Here he will go through the entire vector, add a life unit, if the lige is greater than velue, the element is eresed
-//         if (!tempObstacles.empty()) {
-//             for (auto it = tempObstacles.begin(); it != tempObstacles.end(); ) {
-//                 // Soma uma unidade ao life
-//                 it->addLife();
-                
-//                 // Verifica se life > value
-//                 if (it->getLife() > value) {
-//                     // Apaga o elemento e atualiza o iterador
-//                     it = tempObstacles.erase(it);
-//                 } else {
-//                     // Avança para o próximo elemento
-//                     ++it;
-//                 }
-//             }
-//         }
-
-
-//         // Process gridSize*gridSize movements
-//         for (int i = 0; i < gridSize * gridSize; ++i) {
-//             int randomX = distX(rng);
-//             int randomY = distY(rng);
-//             std::string gridValue = m_lattice.getGridValue(randomX, randomY);
-//             bool found = false;
-
-//             // Try to move hunter cell
-//             for (auto& cell : localHunters) 
-//             {
-//                 if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
-//                     checkPrey = false;
-//                     int capturedPreyId = m_lattice.moveNormalCell(cell, localHunters, localPrey,
-//                         localObstacles, rng, checkPrey,
-//                         m_hunterSearchRadius,tempObstacles);
-
-//                     if (capturedPreyId >= 0) 
-//                     {
-//                         int preyX = cell.getPositionX();  // posição do hunter após mover = posição da presa
-//                         int preyY = cell.getPositionY();
-//                         logCapture(captureFile, time, cell.getId(), capturedPreyId);
-//                     }
-//                     found = true;
-//                     break;
-//                 }
-//             }
-
-//             // If no hunter found, try to move prey cell
-//             if (!found) {
-//                 for (auto& cell : localPrey) {
-//                     if (cell.getPositionX() == randomX && cell.getPositionY() == randomY) {
-//                         checkPrey = true;
-//                         m_lattice.moveCancerCell(cell, localHunters, localPrey, localObstacles, 
-//                                                rng, checkPrey, m_preySearchRadius, tempObstacles);
-//                         break;
-//                     }
-//                 }
-//             }
-//         }
-
-//         // Record state at each interval
-//         if (time >= nextRecordingTime) {
-//             evolutionFile << time << "," << localPrey.size() << "\n";
-//             //  Save positions at recording interval
-//             saveCurrentPositions(time, localPrey, localHunters,tempObstacles);
-//             nextRecordingTime += recordingInterval;
-//         }
-
-//         time += 1.0;
-//     }
-
-//     // Save final positions
-//    // saveCurrentPositions(time, localPrey, localHunters);
-    
-//     evolutionFile.close();
-    
-//     // Save trajectory data to files
-//     saveTrajectoryData(run);
-//     captureFile.close();
-    
-//     return {time, static_cast<int>(localPrey.size())};
-// }

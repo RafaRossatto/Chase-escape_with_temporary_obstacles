@@ -495,149 +495,6 @@ void CellLattice::printGrid() const
     std::cout << "---------------------------\n";
 }
 
-
-
-// void CellLattice::moveCancerCell(Cell& cell,
-//     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
-//     std::mt19937& rng, bool checkCancer, std::vector<temp_obs>& tempObstacles)
-// {
-//     int x = cell.getPositionX();
-//     int y = cell.getPositionY();
-    
-//     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
-//     std::array<Direction, 4> shuffledDirections = directions;
-//     std::shuffle(shuffledDirections.begin(), shuffledDirections.end(), rng);
-    
-//     // 1. DETECTAR HUNTER ADJACENTE - usando grid diretamente
-//     int hunterIndex = -1;
-    
-//     for (int i = 0; i < 4; i++) {
-//         Direction dir = shuffledDirections[i];
-//         int adjX = x, adjY = y;
-//         cell.randomWalk(adjX, adjY, dir);
-        
-//         // ✅ Consulta direta ao grid - O(1)
-//         if (getGridValue(adjX, adjY) == "N") {
-//             hunterIndex = i;
-//             break;
-//         }
-//     }
-    
-//     std::optional<std::pair<int, int>> newPosition = std::nullopt;
-//     bool isFleeing = false;  // Flag para indicar se é movimento de fuga
-    
-//     // 2. CASO 1: TEM HUNTER → FUGE NA DIREÇÃO OPOSTA
-//     if (hunterIndex != -1) {
-//         isFleeing = true;  // Marca que é um movimento de fuga
-//         Direction hunterDir = shuffledDirections[hunterIndex];
-        
-//         Direction oppositeDir;
-//         switch(hunterDir) {
-//             case NORTH: oppositeDir = SOUTH; break;
-//             case SOUTH: oppositeDir = NORTH; break;
-//             case EAST:  oppositeDir = WEST; break;
-//             case WEST:  oppositeDir = EAST; break;
-//         }
-        
-//         int newX = x, newY = y;
-//         cell.randomWalk(newX, newY, oppositeDir);
-        
-//         // ✅ Verifica se está livre - O(1)
-//         if (getGridValue(newX, newY) == "L") {
-//             newPosition = std::make_pair(newX, newY);
-//         }
-//     } 
-//     // 3. CASO 2: SEM HUNTER → LÓGICA DE DENSIDADE
-//     else {
-//         std::vector<Cell> allCells;
-//         allCells.insert(allCells.end(), normalCells.begin(), normalCells.end());
-//         allCells.insert(allCells.end(), cancerCells.begin(), cancerCells.end());
-
-//         int currentDensity = countTargetsAround(x, y, {"N"}, 2);
-//         int minDensity = currentDensity;
-//         std::vector<Direction> bestDirections;
-
-//         for (Direction dir : shuffledDirections) {
-//             int tempX = x, tempY = y;
-//             cell.randomWalk(tempX, tempY, dir);
-            
-//             // ✅ Verifica se está livre - O(1)
-//             if (getGridValue(tempX, tempY) != "L") {
-//                 continue;
-//             }
-
-//             int neighborDensity = countTargetsAround(tempX, tempY, {"N"}, 2);
-//             if (neighborDensity < minDensity) {
-//                 minDensity = neighborDensity;
-//                 bestDirections.clear();
-//                 bestDirections.push_back(dir);
-//             } else if (neighborDensity == minDensity) {
-//                 bestDirections.push_back(dir);
-//             }
-//         }
-
-//         if (!bestDirections.empty()) {
-//             std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
-//             Direction bestDir = bestDirections.front();
-            
-//             int newX = x, newY = y;
-//             cell.randomWalk(newX, newY, bestDir);
-//             newPosition = std::make_pair(newX, newY);
-//         }
-//         else {
-//             // Fallback: movimento aleatório
-//             std::uniform_int_distribution<int> dirDist(0, 3);
-//             Direction randomDir = static_cast<Direction>(dirDist(rng));
-            
-//             int newX = x, newY = y;
-//             cell.randomWalk(newX, newY, randomDir);
-            
-//             // ✅ Verifica se está livre - O(1)
-//             if (getGridValue(newX, newY) == "L") {
-//                 newPosition = std::make_pair(newX, newY);
-//             }
-//         }
-//     }
-    
-//     // 4. APLICAR MOVIMENTO
-//     if (newPosition.has_value()) {
-//         auto [newX, newY] = newPosition.value();
-        
-//         // ✅ Verificação final com grid
-//         if (getGridValue(newX, newY) != "L") {
-//             return;
-//         }
-        
-//         if (getGridValue(x, y) != "O") {
-//             return;
-//         }
-        
-//         // Move
-//         setGridValue(x, y, "L");
-//         cell.changePosition(newX, newY);
-//         setGridValue(newX, newY, "O");
-        
-//         // ✅ CRIA RASTRO APENAS SE FOR MOVIMENTO DE FUGA E COM PROBABILIDADE
-//         const double TRAIL_PROBABILITY = 0.5;  // 50% de chance de criar rastro
-//         std::uniform_real_distribution<double> probDist(0.0, 1.0);
-        
-//     if (isFleeing && probDist(rng) <= TRAIL_PROBABILITY) {
-//         int newId = tempObstacles.size() + 1;
-//         tempObstacles.emplace_back("T", newId, x, y);
-//         setGridValue(x, y, "T");
-        
-//         // Print de debug
-//         std::cout << "[TRAIL CREATED] Time: "
-//                 << " | Position: (" << x << "," << y << ")" 
-//                 << " | ID: " << newId 
-//                 << " | Fleeing: " << isFleeing 
-//                 << std::endl;
-//         std:: cin.get();
-//     } 
-//     }
-// }
-
-
 void CellLattice::moveCancerCell(Cell& cell,
     std::vector<Cell>& normalCells, std::vector<Cell>& cancerCells,
     std::mt19937& rng, bool checkCancer, std::vector<temp_obs>& tempObstacles)
@@ -645,10 +502,10 @@ void CellLattice::moveCancerCell(Cell& cell,
     int x = cell.getPositionX();
     int y = cell.getPositionY();
     
-    std::cout << "\n========================================\n";
-    std::cout << "🎯 MOVENDO ESCAPER na posição (" << x << "," << y << ")" << std::endl;
-    std::cout << "========================================\n";
-    std::cin.get();
+    // std::cout << "\n========================================\n";
+    // std::cout << "🎯 MOVENDO ESCAPER na posição (" << x << "," << y << ")" << std::endl;
+    // std::cout << "========================================\n";
+    //std::cin.get();
     
     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
     std::array<Direction, 4> shuffledDirections = directions;
@@ -658,7 +515,7 @@ void CellLattice::moveCancerCell(Cell& cell,
     int hunterIndex = -1;
     int hunterX = -1, hunterY = -1;
     
-    std::cout << "🔍 Verificando hunters ADJACENTES (distância 1):\n";
+    // std::cout << "🔍 Verificando hunters ADJACENTES (distância 1):\n";
     for (int i = 0; i < 4; i++) {
         Direction dir = shuffledDirections[i];
         int adjX = x, adjY = y;
@@ -673,18 +530,18 @@ void CellLattice::moveCancerCell(Cell& cell,
         }
         
         std::string gridVal = getGridValue(adjX, adjY);
-        std::cout << "  " << dirName << " (" << adjX << "," << adjY << ") = '" << gridVal << "'";
+        // std::cout << "  " << dirName << " (" << adjX << "," << adjY << ") = '" << gridVal << "'";
         
         if (gridVal == "N") {
             hunterIndex = i;
             hunterX = adjX;
             hunterY = adjY;
-            std::cout << " <- HUNTER ENCONTRADO!" << std::endl;
+            // std::cout << " <- HUNTER ENCONTRADO!" << std::endl;
             break;
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
-    std::cin.get();
+    //std::cin.get();
     
     std::optional<std::pair<int, int>> newPosition = std::nullopt;
     bool isFleeing = false;
@@ -692,9 +549,9 @@ void CellLattice::moveCancerCell(Cell& cell,
     // 2. CASO 1: TEM HUNTER ADJACENTE → FUGE
     if (hunterIndex != -1) {
         isFleeing = true;
-        std::cout << "\n⚠️ HUNTER ADJACENTE encontrado em (" << hunterX << "," << hunterY << ")!" << std::endl;
-        std::cout << "🦁 ESCAPER VAI FUGIR na direção oposta!" << std::endl;
-        std::cin.get();
+        // std::cout << "\n⚠️ HUNTER ADJACENTE encontrado em (" << hunterX << "," << hunterY << ")!" << std::endl;
+        // std::cout << "🦁 ESCAPER VAI FUGIR na direção oposta!" << std::endl;
+        //std::cin.get();
         
         Direction hunterDir = shuffledDirections[hunterIndex];
         
@@ -707,38 +564,39 @@ void CellLattice::moveCancerCell(Cell& cell,
             case WEST:  oppositeDir = EAST; oppDirName = "LESTE"; break;
         }
         
-        std::cout << "  Direção do hunter: " << (hunterDir == NORTH ? "NORTE" : hunterDir == SOUTH ? "SUL" : hunterDir == EAST ? "LESTE" : "OESTE") << std::endl;
-        std::cout << "  Direção oposta (fuga): " << oppDirName << std::endl;
-        std::cin.get();
+        // std::cout << "  Direção do hunter: " << (hunterDir == NORTH ? "NORTE" : hunterDir == SOUTH ? "SUL" : hunterDir == EAST ? "LESTE" : "OESTE") << std::endl;
+        // std::cout << "  Direção oposta (fuga): " << oppDirName << std::endl;
+        //std::cin.get();
         
         int newX = x, newY = y;
         cell.randomWalk(newX, newY, oppositeDir);
         
         std::string targetType = getGridValue(newX, newY);
-        std::cout << "  Posição de fuga: (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
+        //std::cout << "  Posição de fuga: (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
         
         if (targetType == "L") {
             newPosition = std::make_pair(newX, newY);
-            std::cout << "  ✅ Posição LIVRE! Vai se mover para (" << newX << "," << newY << ")" << std::endl;
-        } else {
-            std::cout << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
-        }
-        std::cin.get();
+            // std::cout << "  ✅ Posição LIVRE! Vai se mover para (" << newX << "," << newY << ")" << std::endl;
+        } 
+        // else {
+        //     std::cerr << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
+        // }
+        //std::cin.get();
     } 
     // 3. CASO 2: NÃO TEM HUNTER ADJACENTE → VERIFICA HUNTER NO RAIO
     else {
         // Verificar se existe hunter dentro do searchRadius (2)
         int currentDensity = countTargetsAround(x, y, {"N"}, 2);
         
-        std::cout << "\n✅ NENHUM hunter adjacente encontrado." << std::endl;
-        std::cout << "📊 Densidade de hunters no raio 2: " << currentDensity << std::endl;
-        std::cin.get();
+        // std::cout << "\n✅ NENHUM hunter adjacente encontrado." << std::endl;
+        // std::cout << "📊 Densidade de hunters no raio 2: " << currentDensity << std::endl;
+        //std::cin.get();
         
         if (currentDensity > 0) {
             // Tem hunter no raio → usa estratégia de densidade
-            std::cout << "🔍 HUNTERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
-            std::cout << "  (Movendo para direção com MENOR densidade de hunters)" << std::endl;
-            std::cin.get();
+            // std::cout << "🔍 HUNTERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
+            // std::cout << "  (Movendo para direção com MENOR densidade de hunters)" << std::endl;
+            //std::cin.get();
             
             int minDensity = currentDensity;
             std::vector<Direction> bestDirections;
@@ -761,7 +619,7 @@ void CellLattice::moveCancerCell(Cell& cell,
                     case EAST: dirName = "LESTE"; break;
                     case WEST: dirName = "OESTE"; break;
                 }
-                std::cout << "  " << dirName << ": densidade = " << neighborDensity << std::endl;
+                // std::cout << "  " << dirName << ": densidade = " << neighborDensity << std::endl;
                 
                 if (neighborDensity < minDensity) {
                     minDensity = neighborDensity;
@@ -787,16 +645,17 @@ void CellLattice::moveCancerCell(Cell& cell,
                     case EAST: dirName = "LESTE"; break;
                     case WEST: dirName = "OESTE"; break;
                 }
-                std::cout << "  ✅ Melhor direção: " << dirName << " para (" << newX << "," << newY << ")" << std::endl;
-            } else {
-                std::cout << "  ❌ Nenhuma direção livre encontrada!" << std::endl;
-            }
-            std::cin.get();
+                // std::cout << "  ✅ Melhor direção: " << dirName << " para (" << newX << "," << newY << ")" << std::endl;
+            } 
+            // else {
+            //     std::cerr << "  ❌ Nenhuma direção livre encontrada!" << std::endl;
+            // }
+            //std::cin.get();
             
         } else {
             // Não tem hunter no raio → movimento aleatório
-            std::cout << "🎲 NENHUM hunter no raio! Usando MOVIMENTO ALEATÓRIO..." << std::endl;
-            std::cin.get();
+            // std::cout << "🎲 NENHUM hunter no raio! Usando MOVIMENTO ALEATÓRIO..." << std::endl;
+            //std::cin.get();
             
             std::uniform_int_distribution<int> dirDist(0, 3);
             Direction randomDir = static_cast<Direction>(dirDist(rng));
@@ -812,15 +671,16 @@ void CellLattice::moveCancerCell(Cell& cell,
                 case EAST: dirName = "LESTE"; break;
                 case WEST: dirName = "OESTE"; break;
             }
-            std::cout << "  Direção aleatória: " << dirName << " (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
+            // std::cout << "  Direção aleatória: " << dirName << " (" << newX << "," << newY << ") = '" << targetType << "'" << std::endl;
             
             if (targetType == "L") {
                 newPosition = std::make_pair(newX, newY);
-                std::cout << "  ✅ Posição LIVRE! Vai se mover." << std::endl;
-            } else {
-                std::cout << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
-            }
-            std::cin.get();
+                // std::cout << "  ✅ Posição LIVRE! Vai se mover." << std::endl;
+            } 
+            // else {
+            //     std::cerr << "  ❌ Posição OCUPADA! Não vai se mover." << std::endl;
+            // }
+            //std::cin.get();
         }
     }
     
@@ -828,56 +688,58 @@ void CellLattice::moveCancerCell(Cell& cell,
     if (newPosition.has_value()) {
         auto [newX, newY] = newPosition.value();
         
-        std::cout << "\n🚀 APLICANDO MOVIMENTO..." << std::endl;
+        // std::cout << "\n🚀 APLICANDO MOVIMENTO..." << std::endl;
         
         if (getGridValue(newX, newY) != "L") {
-            std::cout << "  ❌ ERRO: Posição destino não está mais livre! Abortando." << std::endl;
+            std::cerr << "  ❌ ERRO: Posição destino não está mais livre! Abortando." << std::endl;
             return;
         }
         
         if (getGridValue(x, y) != "O") {
-            std::cout << "  ❌ ERRO: Posição origem não tem escaper! Abortando." << std::endl;
+            std::cerr << "  ❌ ERRO: Posição origem não tem escaper! Abortando." << std::endl;
             return;
         }
         
         // Move
-        std::cout << "  Limpando posição antiga (" << x << "," << y << ")" << std::endl;
+        // std::cout << "  Limpando posição antiga (" << x << "," << y << ")" << std::endl;
         setGridValue(x, y, "L");
         
-        std::cout << "  Movendo escaper para (" << newX << "," << newY << ")" << std::endl;
+        // std::cout << "  Movendo escaper para (" << newX << "," << newY << ")" << std::endl;
         cell.changePosition(newX, newY);
         
-        std::cout << "  Marcando nova posição como 'O'" << std::endl;
+        // std::cout << "  Marcando nova posição como 'O'" << std::endl;
         setGridValue(newX, newY, "O");
         
-        std::cout << "✅ ESCAPER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
+        // std::cout << "✅ ESCAPER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
         
         // CRIAR RASTRO (apenas se estiver fugindo de hunter adjacente)
         const double TRAIL_PROBABILITY = 0.5;
         std::uniform_real_distribution<double> probDist(0.0, 1.0);
         double roll = probDist(rng);
         
-        std::cout << "\n💨 CRIANDO RASTRO? isFleeing=" << isFleeing << " roll=" << roll << std::endl;
+        // std::cout << "\n💨 CRIANDO RASTRO? isFleeing=" << isFleeing << " roll=" << roll << std::endl;
         
         if (isFleeing && roll <= TRAIL_PROBABILITY) {
             int newId = tempObstacles.size() + 1;
             tempObstacles.emplace_back("T", newId, x, y);
             setGridValue(x, y, "T");
-            std::cout << "✅ RASTRO CRIADO na posição antiga (" << x << "," << y << ") ID=" << newId << std::endl;
-        } else if (isFleeing) {
-            std::cout << "❌ NÃO CRIOU RASTRO: probabilidade falhou (" << roll << " > " << TRAIL_PROBABILITY << ")" << std::endl;
-        } else {
-            std::cout << "❌ NÃO CRIOU RASTRO: não estava fugindo de hunter adjacente (isFleeing=false)" << std::endl;
-        }
-    } else {
-        std::cout << "\n❌ NENHUM MOVIMENTO (newPosition is null)" << std::endl;
-        std::cout << "   O escaper ficou na posição (" << x << "," << y << ")" << std::endl;
-    }
+            // std::cout << "✅ RASTRO CRIADO na posição antiga (" << x << "," << y << ") ID=" << newId << std::endl;
+        } 
+        // else if (isFleeing) {
+        //     std::cout << "❌ NÃO CRIOU RASTRO: probabilidade falhou (" << roll << " > " << TRAIL_PROBABILITY << ")" << std::endl;
+        // } else {
+        //     std::cout << "❌ NÃO CRIOU RASTRO: não estava fugindo de hunter adjacente (isFleeing=false)" << std::endl;
+        // }
+    } 
+    //else {
+    //     std::cout << "\n❌ NENHUM MOVIMENTO (newPosition is null)" << std::endl;
+    //     std::cout << "   O escaper ficou na posição (" << x << "," << y << ")" << std::endl;
+    // }
     
-    std::cout << "\n========================================\n";
-    std::cout << "🏁 FIM DO MOVIMENTO DO ESCAPER" << std::endl;
-    std::cout << "========================================\n";
-    std::cin.get();
+    // std::cout << "\n========================================\n";
+    // std::cout << "🏁 FIM DO MOVIMENTO DO ESCAPER" << std::endl;
+    // std::cout << "========================================\n";
+    //std::cin.get();
 }
 
 /**
@@ -930,10 +792,10 @@ void CellLattice::moveNormalCell(Cell& cell,
     int x = cell.getPositionX();
     int y = cell.getPositionY();
     
-    std::cout << "\n========================================\n";
-    std::cout << "🔫 MOVENDO CHASER na posição (" << x << "," << y << ")" << std::endl;
-    std::cout << "========================================\n";
-    std::cin.get();
+    // std::cout << "\n========================================\n";
+    // std::cout << "🔫 MOVENDO CHASER na posição (" << x << "," << y << ")" << std::endl;
+    // std::cout << "========================================\n";
+    //std::cin.get();
     
     const std::array<Direction, 4> directions = {NORTH, EAST, SOUTH, WEST};
     std::array<Direction, 4> shuffledDirections = directions;
@@ -943,7 +805,7 @@ void CellLattice::moveNormalCell(Cell& cell,
     int preyIndex = -1;
     int preyX = -1, preyY = -1;
     
-    std::cout << "🔍 Verificando presas adjacentes (escaper 'O'):\n";
+    // std::cout << "🔍 Verificando presas adjacentes (escaper 'O'):\n";
     for (int i = 0; i < 4; i++) {
         Direction dir = shuffledDirections[i];
         int adjX = x, adjY = y;
@@ -958,37 +820,37 @@ void CellLattice::moveNormalCell(Cell& cell,
         }
         
         std::string gridVal = getGridValue(adjX, adjY);
-        std::cout << "  " << dirName << " (" << adjX << "," << adjY << ") = '" << gridVal << "'";
+        // std::cout << "  " << dirName << " (" << adjX << "," << adjY << ") = '" << gridVal << "'";
         
         if (gridVal == "O") {
             preyIndex = i;
             preyX = adjX;
             preyY = adjY;
             preyFoundCount++;
-            std::cout << " <- PRESA ENCONTRADA!" << std::endl;
+            // std::cout << " <- PRESA ENCONTRADA!" << std::endl;
             break;
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
-    std::cin.get();
+    //std::cin.get();
     
     std::optional<std::pair<int, int>> newPosition = std::nullopt;
     int capturedId = -1;
     
     // 2. CASO 1: TEM PRESA ADJACENTE → CAPTURA
     if (preyIndex != -1) {
-        std::cout << "\n⚠️ PRESA ADJACENTE encontrada em (" << preyX << "," << preyY << ")!" << std::endl;
-        std::cout << "🔫 CHASER VAI CAPTURAR!" << std::endl;
-        std::cin.get();
+        // std::cout << "\n⚠️ PRESA ADJACENTE encontrada em (" << preyX << "," << preyY << ")!" << std::endl;
+        // std::cout << "🔫 CHASER VAI CAPTURAR!" << std::endl;
+        //std::cin.get();
         
         Direction preyDir = shuffledDirections[preyIndex];
         
         int captureX = preyX;
         int captureY = preyY;
         
-        std::cout << "  Posição da presa: (" << captureX << "," << captureY << ")" << std::endl;
-        std::cout << "  Verificando se escaper ainda está lá..." << std::endl;
-        std::cin.get();
+        // std::cout << "  Posição da presa: (" << captureX << "," << captureY << ")" << std::endl;
+        // std::cout << "  Verificando se escaper ainda está lá..." << std::endl;
+        //std::cin.get();
         
         // Verificar se o escaper ainda existe
         bool escaperExists = false;
@@ -1000,9 +862,9 @@ void CellLattice::moveNormalCell(Cell& cell,
         }
         
         std::string gridVal = getGridValue(captureX, captureY);
-        std::cout << "  Grid na posição: '" << gridVal << "'" << std::endl;
-        std::cout << "  Escaper no vetor: " << (escaperExists ? "SIM" : "NÃO") << std::endl;
-        std::cin.get();
+        // std::cout << "  Grid na posição: '" << gridVal << "'" << std::endl;
+        // std::cout << "  Escaper no vetor: " << (escaperExists ? "SIM" : "NÃO") << std::endl;
+        //std::cin.get();
         
         if (escaperExists && gridVal == "O") {
             // Captura a presa
@@ -1010,7 +872,7 @@ void CellLattice::moveNormalCell(Cell& cell,
                 if (it->getPositionX() == captureX && it->getPositionY() == captureY) {
                     capturedId = it->getId();
                     captureSuccess++;
-                    std::cout << "\n✅ CAPTURA REALIZADA! Escaper ID=" << capturedId << " capturado!" << std::endl;
+                    // std::cout << "\n✅ CAPTURA REALIZADA! Escaper ID=" << capturedId << " capturado!" << std::endl;
                     setGridValue(captureX, captureY, "L");
                     it = cancerCells.erase(it);
                     break;
@@ -1022,44 +884,45 @@ void CellLattice::moveNormalCell(Cell& cell,
             // Move para a posição da presa capturada
             newPosition = std::make_pair(captureX, captureY);
             
-            std::cout << "  Chaser vai se mover para (" << captureX << "," << captureY << ")" << std::endl;
-            std::cin.get();
+            // std::cout << "  Chaser vai se mover para (" << captureX << "," << captureY << ")" << std::endl;
+            //std::cin.get();
         } else {
             captureFailed++;
-            std::cout << "\n❌ CAPTURA FALHOU! Escaper não está mais na posição!" << std::endl;
-            std::cout << "  (Pode ter sido capturado por outro chaser ou se movido)" << std::endl;
-            std::cin.get();
+            std::cerr << "\n❌ CAPTURA FALHOU! Escaper não está mais na posição!" << std::endl;
+            std::cerr << "  (Pode ter sido capturado por outro chaser ou se movido)" << std::endl;
+            //std::cin.get();
             
             // Ainda assim, tenta mover para a posição se estiver vazia
             if (gridVal == "L") {
                 newPosition = std::make_pair(captureX, captureY);
-                std::cout << "  Posição agora está vazia. Chaser vai se mover para lá." << std::endl;
-                std::cin.get();
+                // std::cout << "  Posição agora está vazia. Chaser vai se mover para lá." << std::endl;
+                //std::cin.get();
             }
         }
     } 
     // 3. CASO 2: NÃO TEM PRESA ADJACENTE → SEGUE MAIOR DENSIDADE DE ESCAPERS
     else {
-        std::cout << "\n✅ NENHUMA presa adjacente encontrada." << std::endl;
+        // std::cout << "\n✅ NENHUMA presa adjacente encontrada." << std::endl;
         
         // Verificar se existe escaper no raio
         int currentDensity = countTargetsAround(x, y, {"O"}, 2);
-        std::cout << "📊 Densidade de escapers no raio 2: " << currentDensity << std::endl;
-        std::cin.get();
+        // std::cout << "📊 Densidade de escapers no raio 2: " << currentDensity << std::endl;
+        //std::cin.get();
         
-        if (currentDensity > 0) {
-            std::cout << "🔍 ESCAPERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
-            std::cout << "  (Movendo para direção com MAIOR densidade de escapers)" << std::endl;
-            std::cin.get();
-        } else {
-            std::cout << "🎲 NENHUM escaper no raio! Usando MOVIMENTO ALEATÓRIO..." << std::endl;
-            std::cin.get();
-        }
+        // if (currentDensity > 0) {
+        //     std::cout << "🔍 ESCAPERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
+        //     std::cout << "  (Movendo para direção com MAIOR densidade de escapers)" << std::endl;
+        //     //std::cin.get();
+        // } 
+        // else {
+        //     std::cout << "🎲 NENHUM escaper no raio! Usando MOVIMENTO ALEATÓRIO..." << std::endl;
+        //     //std::cin.get();
+        // }
         
         int maxDensity = currentDensity;
         std::vector<Direction> bestDirections;
         
-        std::cout << "\n📊 Analisando densidade em cada direção:\n";
+        // std::cout << "\n📊 Analisando densidade em cada direção:\n";
         for (Direction dir : shuffledDirections) {
             int tempX = x, tempY = y;
             cell.randomWalk(tempX, tempY, dir);
@@ -1074,31 +937,32 @@ void CellLattice::moveNormalCell(Cell& cell,
                 case WEST: dirName = "OESTE"; break;
             }
             
-            std::cout << "  " << dirName << " (" << tempX << "," << tempY << ") = '" << cellType << "'";
+            // std::cout << "  " << dirName << " (" << tempX << "," << tempY << ") = '" << cellType << "'";
             
             if (cellType != "L" && cellType != "O") {
-                std::cout << " -> OCUPADO, ignorando" << std::endl;
+                // std::cout << " -> OCUPADO, ignorando" << std::endl;
                 continue;
             }
             
             int neighborDensity = countTargetsAround(tempX, tempY, {"O"}, 2);
-            std::cout << " -> densidade = " << neighborDensity;
+            // std::cout << " -> densidade = " << neighborDensity;
             
             if (neighborDensity > maxDensity) {
                 maxDensity = neighborDensity;
                 bestDirections.clear();
                 bestDirections.push_back(dir);
-                std::cout << " -> NOVO MELHOR!" << std::endl;
+                // std::cout << " -> NOVO MELHOR!" << std::endl;
             } else if (neighborDensity == maxDensity) {
                 bestDirections.push_back(dir);
-                std::cout << " -> EMPATE" << std::endl;
-            } else {
-                std::cout << " -> PIOR" << std::endl;
-            }
+                // std::cout << " -> EMPATE" << std::endl;
+            } 
+            // else {
+            //     std::cout << " -> PIOR" << std::endl;
+            // }
         }
-        std::cin.get();
+        //std::cin.get();
         
-        std::cout << "\n📊 Melhores direções encontradas: " << bestDirections.size() << std::endl;
+        // std::cout << "\n📊 Melhores direções encontradas: " << bestDirections.size() << std::endl;
         
         if (!bestDirections.empty()) {
             std::shuffle(bestDirections.begin(), bestDirections.end(), rng);
@@ -1115,12 +979,13 @@ void CellLattice::moveNormalCell(Cell& cell,
                 case EAST: dirName = "LESTE"; break;
                 case WEST: dirName = "OESTE"; break;
             }
-            std::cout << "  ✅ Melhor direção: " << dirName << " para (" << newX << "," << newY << ")" << std::endl;
-        } else {
-            std::cout << "  ❌ Nenhuma direção válida encontrada!" << std::endl;
+            // std::cout << "  ✅ Melhor direção: " << dirName << " para (" << newX << "," << newY << ")" << std::endl;
+        } 
+        else {
+            // std::cout << "  ❌ Nenhuma direção válida encontrada!" << std::endl;
             
             // Fallback: movimento aleatório
-            std::cout << "\n🎲 Tentando movimento aleatório como fallback..." << std::endl;
+            // std::cout << "\n🎲 Tentando movimento aleatório como fallback..." << std::endl;
             std::uniform_int_distribution<int> dirDist(0, 3);
             Direction randomDir = static_cast<Direction>(dirDist(rng));
             
@@ -1135,20 +1000,20 @@ void CellLattice::moveNormalCell(Cell& cell,
                 case EAST: dirName = "LESTE"; break;
                 case WEST: dirName = "OESTE"; break;
             }
-            std::cout << "  Direção aleatória: " << dirName << " (" << newX << "," << newY << ") = '" << cellType << "'" << std::endl;
+            // std::cout << "  Direção aleatória: " << dirName << " (" << newX << "," << newY << ") = '" << cellType << "'" << std::endl;
             
             if (cellType == "L" || cellType == "O") {
                 newPosition = std::make_pair(newX, newY);
-                std::cout << "  ✅ Posição válida! Vai se mover." << std::endl;
+                // std::cout << "  ✅ Posição válida! Vai se mover." << std::endl;
                 
                 // Se for um escaper, captura
                 if (cellType == "O") {
-                    std::cout << "  🎯 Encontrou um escaper! Capturando..." << std::endl;
+                    // std::cout << "  🎯 Encontrou um escaper! Capturando..." << std::endl;
                     for (auto it = cancerCells.begin(); it != cancerCells.end(); ) {
                         if (it->getPositionX() == newX && it->getPositionY() == newY) {
                             capturedId = it->getId();
                             captureSuccess++;
-                            std::cout << "  ✅ CAPTURA NO FALLBACK! Escaper ID=" << capturedId << std::endl;
+                            // std::cout << "  ✅ CAPTURA NO FALLBACK! Escaper ID=" << capturedId << std::endl;
                             setGridValue(newX, newY, "L");
                             it = cancerCells.erase(it);
                             break;
@@ -1157,63 +1022,65 @@ void CellLattice::moveNormalCell(Cell& cell,
                         }
                     }
                 }
-            } else {
-                std::cout << "  ❌ Posição ocupada! Não vai se mover." << std::endl;
-            }
+            } 
+            // else {
+            //     std::cout << "  ❌ Posição ocupada! Não vai se mover." << std::endl;
+            // }
         }
-        std::cin.get();
+        //std::cin.get();
     }
     
     // 4. APLICAR MOVIMENTO
     if (newPosition.has_value()) {
         auto [newX, newY] = newPosition.value();
         
-        std::cout << "\n🚀 APLICANDO MOVIMENTO DO CHASER..." << std::endl;
+        // std::cout << "\n🚀 APLICANDO MOVIMENTO DO CHASER..." << std::endl;
         
         // Verificar se a posição ainda está livre
         std::string currentType = getGridValue(newX, newY);
         if (currentType != "L" && currentType != "O") {
-            std::cout << "  ❌ Posição destino ocupada por '" << currentType << "'! Abortando." << std::endl;
+            std::cerr << "  ❌ Posição destino ocupada por '" << currentType << "'! Abortando." << std::endl;
             return;
         }
         
         if (getGridValue(x, y) != "N") {
-            std::cout << "  ❌ Posição origem não tem chaser! Abortando." << std::endl;
+            std::cerr << "  ❌ Posição origem não tem chaser! Abortando." << std::endl;
             return;
         }
         
         // Move
-        std::cout << "  Limpando posição antiga (" << x << "," << y << ")" << std::endl;
+        // std::cout << "  Limpando posição antiga (" << x << "," << y << ")" << std::endl;
         setGridValue(x, y, "L");
         
-        std::cout << "  Movendo chaser para (" << newX << "," << newY << ")" << std::endl;
+        // std::cout << "  Movendo chaser para (" << newX << "," << newY << ")" << std::endl;
         cell.changePosition(newX, newY);
         
-        std::cout << "  Marcando nova posição como 'N'" << std::endl;
+        // std::cout << "  Marcando nova posição como 'N'" << std::endl;
         setGridValue(newX, newY, "N");
         
         movesMade++;
-        std::cout << "✅ CHASER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
-    } else {
-        std::cout << "\n❌ NENHUM MOVIMENTO (newPosition is null)" << std::endl;
-        std::cout << "   O chaser ficou na posição (" << x << "," << y << ")" << std::endl;
-    }
+        // std::cout << "✅ CHASER MOVEU de (" << x << "," << y << ") para (" << newX << "," << newY << ")" << std::endl;
+    } 
+    // else {
+    //     std::cout << "\n❌ NENHUM MOVIMENTO (newPosition is null)" << std::endl;
+    //     std::cout << "   O chaser ficou na posição (" << x << "," << y << ")" << std::endl;
+    // }
     
     // Estatísticas
-    if (totalCalls % 100 == 0) {
-        std::cout << "\n========================================\n";
-        std::cout << "📊 ESTATÍSTICAS DO CHASER (após " << totalCalls << " chamadas)" << std::endl;
-        std::cout << "  Presas encontradas: " << preyFoundCount << std::endl;
-        std::cout << "  Capturas bem sucedidas: " << captureSuccess << std::endl;
-        std::cout << "  Capturas falhas: " << captureFailed << std::endl;
-        std::cout << "  Movimentos realizados: " << movesMade << std::endl;
-        std::cout << "========================================\n";
-    }
+    // if (totalCalls % 100 == 0) {
+    //     std::cout << "\n========================================\n";
+    //     std::cout << "📊 ESTATÍSTICAS DO CHASER (após " << totalCalls << " chamadas)" << std::endl;
+    //     std::cout << "  Presas encontradas: " << preyFoundCount << std::endl;
+    //     std::cout << "  Capturas bem sucedidas: " << captureSuccess << std::endl;
+    //     std::cout << "  Capturas falhas: " << captureFailed << std::endl;
+    //     std::cout << "  Movimentos realizados: " << movesMade << std::endl;
+    //     std::cout << "========================================\n";
+    // }
     
-    std::cout << "\n========================================\n";
-    std::cout << "🏁 FIM DO MOVIMENTO DO CHASER" << std::endl;
-    std::cout << "========================================\n";
-    std::cin.get();
+    // std::cout << "\n========================================\n";
+    // std::cout << "🏁 FIM DO MOVIMENTO DO CHASER" << std::endl;
+    // std::cout << "========================================\n";
+    //std::cin.get();
 }
 
 // void CellLattice::moveNormalCell(Cell& cell,
