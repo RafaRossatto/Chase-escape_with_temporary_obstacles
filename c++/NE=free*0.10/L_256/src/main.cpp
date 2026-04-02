@@ -51,12 +51,12 @@ for (int frac : frac_values) {
         
         // Construir caminhos dos arquivos
         std::ostringstream oss_escaper;
-        oss_escaper << "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_environment/simulation_frac_" 
+        oss_escaper << "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_environment/simulation_frac_" 
                     << frac << "_run_" << run << "/escapers.csv";
         std::string escaper_file = oss_escaper.str();
         
         std::ostringstream oss_chaser;
-        oss_chaser << "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_environment/simulation_frac_" 
+        oss_chaser << "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_environment/simulation_frac_" 
                    << frac << "_run_" << run << "/chasers.csv";
         std::string chaser_file = oss_chaser.str();
         
@@ -128,7 +128,7 @@ for (int frac : frac_values) {
         unsigned int runSeed = rd() + run;
         
         // Diretório de saída
-        std::string path_out = "/home/camafeu/Documentos/rossatto/github/Chase-escape_with_temporary_obstacles/data/data_raw";
+        std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw";
         
         // Nome do diretório
         std::ostringstream oss_dir;
