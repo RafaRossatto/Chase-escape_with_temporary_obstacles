@@ -1,10 +1,8 @@
 #include <map>
-#include "cell_lattice.h"
 #include <iomanip>
-#include <algorithm> 
 #include <array> 
 #include <optional>
-#include "temp_obs.h"
+#include "cell_lattice.h"
 #include "globals.hpp"
 
 CellLattice::CellLattice(int width, int height) : m_width(width), m_height(height) {
