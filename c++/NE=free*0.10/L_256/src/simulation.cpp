@@ -9,44 +9,6 @@
 
 namespace fs = std::filesystem;
 
-/**
- * @brief Constructs a Simulation object and initializes output directory
- * 
- * Creates a new simulation instance with the specified grid, seed, and
- * output configuration. The constructor automatically creates the output
- * directory structure and initializes empty output files for recording
- * simulation results.
- * 
- * @param lattice Reference to the grid lattice where simulation will run
- * @param seed Random number generator seed for reproducibility
- * @param path_out Base output directory path
- * @param directory_name Subdirectory name for this specific simulation run
- * @param base_name Base filename prefix for all output files
- * 
- * @note The constructor creates the following directory structure:
- *       path_out/directory_name/
- *       ├── base_name_chasers.csv
- *       ├── base_name_escapers.csv
- *       └── base_name_seed.txt
- * 
- * @warning The function does not validate that the output directory is
- *          writable. Ensure proper permissions before calling.
- * 
- * @see ~Simulation()
- * @see createEmptyOutputFiles()
- * @see getOutputPath()
- * 
- * @example
- * @code
- * // Create simulation with output in "output/sim_1/"
- * Simulation sim(lattice, 12345, "output", "sim_1", "results");
- * // Creates:
- * // output/sim_1/results_chasers.csv
- * // output/sim_1/results_escapers.csv
- * // output/sim_1/results_seed.txt
- * @endcode
- */
-// Simulation.cpp
 Simulation::Simulation(CellLattice& lattice, 
                        std::vector<Cell>& chasers,
                        std::vector<Cell>& escapers,
@@ -77,51 +39,7 @@ Simulation::Simulation(CellLattice& lattice,
     } else {
         std::cout << "[INFO] Using existing output directory: " << m_outputPath << std::endl;
     }
-    
-    // Initialize empty output files with headers
-    //createEmptyOutputFiles();
-    
-    // Reset trajectory data structures
-    //clearTrajectoryData();
 }
-
-
-/**
- * @brief Creates empty output files with appropriate headers for simulation data
- * 
- * Initializes all output files that will be used during simulation execution.
- * Each file is created with a header row containing column definitions.
- * Files are created in the output directory specified during construction.
- * 
- * **Files Created:**
- * - `{base_name}_chasers.csv`: Records chaser (normal cell) positions
- *   - Columns: x, y, id
- * - `{base_name}_escapers.csv`: Records escaper (cancer cell) positions
- *   - Columns: x, y, id
- * - `{base_name}_seed.txt`: Stores simulation seed for reproducibility
- *   - Content: Seed: {seed_value}
- * 
- * @note This function is called automatically by the constructor.
- *       It does not need to be called manually in normal usage.
- * 
- * @warning If file creation fails, an error is printed to std::cerr but
- *          the function continues execution. Subsequent file operations
- *          may fail if the file wasn't created.
- * 
- * @see getFilePath()
- * @see saveChasersPositions()
- * @see saveEscapersPositions()
- * 
- * @example
- * @code
- * // Called automatically by constructor:
- * Simulation sim(lattice, 12345, "output", "run_1", "results");
- * // Creates:
- * // output/run_1/results_chasers.csv
- * // output/run_1/results_escapers.csv
- * // output/run_1/results_seed.txt
- * @endcode
- */
 
 void Simulation::createEmptyOutputFiles()
 {
@@ -161,96 +79,10 @@ void Simulation::createEmptyOutputFiles()
     }
 }
 
-/**
- * @brief Constructs the full file path for a simulation output file
- * 
- * Combines the output directory path, base filename prefix, and the specific
- * filename to create a complete filesystem path for simulation output files.
- * 
- * **Path Format:**
- * ```
- * {m_outputPath}/{m_baseName}_{filename}
- * ```
- * 
- * @param filename The specific filename (e.g., "chasers.csv", "seed.txt")
- * @return std::string Complete file path including directory and filename
- * 
- * @note This function does not validate whether the path is valid or
- *       whether the directory exists. It simply performs string concatenation.
- * 
- * @warning The returned path uses the operating system's path separator.
- *          On Unix-like systems it uses '/', on Windows it will use '\'
- *          if the path is constructed with backslashes.
- * 
- * @see createEmptyOutputFiles()
- * @see saveChasersPositions()
- * @see saveEscapersPositions()
- * 
- * @example
- * @code
- * // With m_outputPath = "output/simulation_run_1"
- * // and m_baseName = "results"
- * 
- * std::string chaserPath = getFilePath("chasers.csv");
- * // Returns: "output/simulation_run_1/results_chasers.csv"
- * 
- * std::string seedPath = getFilePath("seed.txt");
- * // Returns: "output/simulation_run_1/results_seed.txt"
- * 
- * // Using with file operations
- * std::ofstream file(getFilePath("data.csv"));
- * @endcode
- */
 std::string Simulation::getFilePath(const std::string& filename) const
 {
     return m_outputPath + "/" + m_baseName + "_" + filename;
 }
-
-/**
- * @brief Runs a single simulation step for testing grid point selection
- * 
- * This method demonstrates random point selection on the grid by generating
- * and displaying random coordinates along with the cell types found at those
- * positions. It's useful for testing grid initialization and agent placement
- * before running full simulations.
- * 
- * **Functionality:**
- * - Initializes random number generator with the simulation seed
- * - Generates 20 random (x, y) coordinates within grid boundaries
- * - Retrieves and displays the cell value at each position
- * - Identifies the agent type based on grid value
- * 
- * @param run The run identifier (used for logging and output file naming)
- * 
- * @note This is a testing/debugging method that does not perform actual
- *       simulation logic. It only demonstrates grid access and random
- *       coordinate selection.
- * 
- * @warning This method uses the same seed for all runs, which may produce
- *          the same sequence of random points across multiple calls.
- *          For different sequences, call with different run parameters or
- *          modify the seed per run.
- * 
- * @see runFullSimulation()
- * @see getGridValue()
- * 
- * @example
- * @code
- * // Create simulation and test grid point selection
- * Simulation sim(lattice, 12345, "output", "test_run", "test");
- * sim.runSingle(1);
- * 
- * // Output example:
- * // === Selecionando pontos aleatórios no grid 256x256 ===
- * // Run: 1
- * // Ponto 1: (123, 45) -> N (CHASER)
- * // Ponto 2: (67, 89) -> O (ESCAPER)
- * // ...
- * // === Fim da seleção ===
- * @endcode
- */
-     // std::cout << "=== Fim da seleção ===" << std::endl;
-
 
 void Simulation::runSingle(int run) 
 {
