@@ -2,12 +2,12 @@
 #include <map>
 #include <vector>
 #include <random>
+#include <sstream>
+#include <iomanip>
 #include "cell_lattice.h"
 #include "cell.h"
 #include "simulation.h"
 #include "globals.hpp"
-#include <sstream>
-#include <iomanip>
 
 double TRAIL_PROBABILITY = 0.5;
 
