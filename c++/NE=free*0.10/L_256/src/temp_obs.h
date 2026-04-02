@@ -17,17 +17,6 @@ public:
      * @param positionY Posição Y
      */
     temp_obs(const std::string& type, int id, int positionX, int positionY);
-    
-    /**
-     * @brief Soma uma unidade ao life
-     */
-    void addLife();
-    
-    /**
-     * @brief Retorna o valor atual do life
-     * @return int Valor do life
-     */
-    int getLife() const;
 
 private:
     int m_life;  // Atributo life sempre começa com 0
