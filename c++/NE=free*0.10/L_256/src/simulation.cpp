@@ -118,6 +118,7 @@ void Simulation::runSingle(int run)
     chaserOut << "time,x,y,id\n";
     escaperOut << "time,x,y,id\n";
     tempObsOut << "time,x,y,id\n";
+    nescepersOut << "time,NE\n";
     
     // Salvar seed
     seedOut << "Simulation Seed: " << m_seed << "\n";
@@ -225,6 +226,13 @@ void Simulation::runSingle(int run)
             }
         }
     }
+
+    // Exportar N_E (leve, alta resolução)
+    if (step % N_ESCAPER_EXPORT_INTERVAL == 0) {
+        nescepersOut << step << ","
+              << m_escapers.size() << "\n"
+        nescepersOut.flush();  // opcional: garante que os dados sejam escritos
+    }
     
     // Escrever dados restantes
     for (const auto& line : chaserBuffer) chaserOut << line;
@@ -232,6 +240,7 @@ void Simulation::runSingle(int run)
     for (const auto& line : tempObsBuffer) tempObsOut << line;
     
     // Fechar arquivos
+    nescepersOut.close();
     chaserOut.close();
     escaperOut.close();
     tempObsOut.close();
