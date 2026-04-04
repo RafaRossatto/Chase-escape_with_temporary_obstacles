@@ -146,9 +146,11 @@ void Simulation::runSingle(int run)
     // Loop principal
     for (int step = 0; step < m_totalSteps; ++step) {
         // ESCOLHER POSIÇÃO ALEATÓRIA
-        int randomX = distPos(rng);
-        int randomY = distPos(rng);
-        std::string cellType = m_lattice.getGridValue(randomX, randomY);
+      do {
+          randomX = distPos(rng);
+          randomY = distPos(rng);
+          cellType = m_lattice.getGridValue(randomX, randomY);
+      } while (cellType != "N" && cellType != "O");
         
         // SE FOR CHASER (N)
         if (cellType == "N") {
