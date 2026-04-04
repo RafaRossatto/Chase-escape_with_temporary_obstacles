@@ -100,11 +100,13 @@ void Simulation::runSingle(int run)
     std::string chaserFile = getFilePath("chasers_run" + std::to_string(run) + ".csv");
     std::string escaperFile = getFilePath("escapers_run" + std::to_string(run) + ".csv");
     std::string tempObstaclesFile = getFilePath("tempObs_run" + std::to_string(run) + ".csv");
+    std::string nescepers = getFilePath("N_escapers_run" + std::to_string(run) + ".csv");
     std::string seedFile = getFilePath("seed_run" + std::to_string(run) + ".txt");
     
     std::ofstream chaserOut(chaserFile);
     std::ofstream escaperOut(escaperFile);
     std::ofstream tempObsOut(tempObstaclesFile);
+    std::ofstream nescepersOut(nescepers);  
     std::ofstream seedOut(seedFile);
     
     if (!chaserOut.is_open() || !escaperOut.is_open() || !tempObsOut.is_open() || !seedOut.is_open()) {
