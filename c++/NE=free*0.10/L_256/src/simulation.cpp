@@ -145,7 +145,10 @@ void Simulation::runSingle(int run)
     std::cout << "Initial chasers: " << m_chasers.size() << std::endl;
     std::cout << "Initial escapers: " << m_escapers.size() << std::endl;
     std::cout << "Progress: " << std::flush;
-    
+
+    int randomX, randomY;
+    std::string cellType;
+  
     // Loop principal
     for (int step = 0; step < m_totalSteps; ++step) {
         // ESCOLHER POSIÇÃO ALEATÓRIA
@@ -189,6 +192,16 @@ void Simulation::runSingle(int run)
                
         // EXPORTAR DADOS (a cada N passos)
         //const int EXPORT_INTERVAL = 500;
+
+            // Exportar N_E (leve, alta resolução)
+      if (step % N_ESCAPER_EXPORT_INTERVAL == 0) {
+          nescepersOut << step << ","
+                << m_escapers.size() << "\n"
+          nescepersOut.flush();  // opcional: garante que os dados sejam escritos
+      }
+    
+
+      
         if (step % EXPORT_INTERVAL == 0 || step == m_totalSteps - 1) {
             // Exportar chasers
             for (const auto& chaser : m_chasers) {
@@ -227,13 +240,7 @@ void Simulation::runSingle(int run)
         }
     }
 
-    // Exportar N_E (leve, alta resolução)
-    if (step % N_ESCAPER_EXPORT_INTERVAL == 0) {
-        nescepersOut << step << ","
-              << m_escapers.size() << "\n"
-        nescepersOut.flush();  // opcional: garante que os dados sejam escritos
-    }
-    
+
     // Escrever dados restantes
     for (const auto& line : chaserBuffer) chaserOut << line;
     for (const auto& line : escaperBuffer) escaperOut << line;
