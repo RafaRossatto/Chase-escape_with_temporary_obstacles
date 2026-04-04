@@ -196,7 +196,7 @@ void Simulation::runSingle(int run)
             // Exportar N_E (leve, alta resolução)
       if (step % N_ESCAPER_EXPORT_INTERVAL == 0) {
           nescepersOut << step << ","
-                << m_escapers.size() << "\n"
+                << m_escapers.size() << "\n";
           nescepersOut.flush();  // opcional: garante que os dados sejam escritos
       }
     
