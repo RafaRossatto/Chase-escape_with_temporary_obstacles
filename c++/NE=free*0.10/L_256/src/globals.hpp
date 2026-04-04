@@ -5,5 +5,6 @@
 // Opcional: pode deixar apenas como declaração externa
 extern double TRAIL_PROBABILITY;
 const int EXPORT_INTERVAL = 5000;
+const int N_ESCAPER_EXPORT_INTERVAL = 1000;
 
 #endif
