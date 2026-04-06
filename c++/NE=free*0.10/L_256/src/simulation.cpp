@@ -101,12 +101,14 @@ void Simulation::runSingle(int run)
     std::string escaperFile = getFilePath("escapers_run" + std::to_string(run) + ".csv");
     std::string tempObstaclesFile = getFilePath("tempObs_run" + std::to_string(run) + ".csv");
     std::string nescepers = getFilePath("N_escapers_run" + std::to_string(run) + ".csv");
+    std::string ntempobs = getFilePath("N_obs" + std::to_string(run) + ".csv");
     std::string seedFile = getFilePath("seed_run" + std::to_string(run) + ".txt");
     
     std::ofstream chaserOut(chaserFile);
     std::ofstream escaperOut(escaperFile);
     std::ofstream tempObsOut(tempObstaclesFile);
-    std::ofstream nescepersOut(nescepers);  
+    std::ofstream nescepersOut(nescepers);
+    std::ofstream ntempobsOut(ntempobs);  
     std::ofstream seedOut(seedFile);
     
     if (!chaserOut.is_open() || !escaperOut.is_open() || !tempObsOut.is_open() || !seedOut.is_open()) {
@@ -119,6 +121,7 @@ void Simulation::runSingle(int run)
     escaperOut << "time,x,y,id\n";
     tempObsOut << "time,x,y,id\n";
     nescepersOut << "time,NE\n";
+    ntempobsOut << "time,NO\n";
     
     // Salvar seed
     seedOut << "Simulation Seed: " << m_seed << "\n";
@@ -195,9 +198,18 @@ void Simulation::runSingle(int run)
 
             // Exportar N_E (leve, alta resolução)
       if (step % N_ESCAPER_EXPORT_INTERVAL == 0) {
-          nescepersOut << step << ","
-                << m_escapers.size() << "\n";
+          nescepersOut << step << "," << m_escapers.size() << "\n";
           nescepersOut.flush();  // opcional: garante que os dados sejam escritos
+          if (m_tempObstacles.size() > 0)
+          {
+            ntempobsOut << step << "," << m_tempObstacles.size() << "\n";          
+            ntempobsOut.flush();  // opcional: garante que os dados sejam escritos
+
+          }
+          
+          
+
+
       }
     
 
