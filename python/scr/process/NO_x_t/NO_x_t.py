@@ -30,7 +30,7 @@ for idx, prob in enumerate(prob_values):
     # Ler todos os runs para esta probabilidade
     for run in range(1, num_runs + 1):
         try:
-            caminho = f"{base_path}simulation_frac_25run{run}obsprob{prob:.2f}/results_N_obs{run}.csv"
+            caminho = f"{base_path}simulation_frac_{frac}run{run}obsprob{prob:.2f}/results_N_obs{run}.csv"
             df = pd.read_csv(caminho)
             
             # Começar a partir da segunda linha
