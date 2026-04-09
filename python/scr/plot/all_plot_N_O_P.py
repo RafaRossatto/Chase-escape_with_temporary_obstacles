@@ -47,24 +47,24 @@ for idx, frac in enumerate(frac_values):
                     elinewidth=2,
                     markersize=8,
                     color=cores[idx],
-                    ecolor='lightgray',
+                    ecolor='black',
                     alpha=0.8,
                     label=f'frac = {frac}',
                     markeredgecolor='darkblue' if idx == 0 else 'darkred' if idx == 1 else 'darkgreen',
                     markeredgewidth=1,
                     linewidth=2.5)
         
-        # Adicionar linha de tendência (opcional - comentar se não quiser)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(df_metadata['probabilidade'], 
-                                                                         df_metadata['media_final'])
-        line_x = np.array([df_metadata['probabilidade'].min(), df_metadata['probabilidade'].max()])
-        line_y = intercept + slope * line_x
+        # # Adicionar linha de tendência (opcional - comentar se não quiser)
+        # slope, intercept, r_value, p_value, std_err = stats.linregress(df_metadata['probabilidade'], 
+        #                                                                  df_metadata['media_final'])
+        # line_x = np.array([df_metadata['probabilidade'].min(), df_metadata['probabilidade'].max()])
+        # line_y = intercept + slope * line_x
         
-        plt.plot(line_x, line_y, 
-                '--', 
-                color=cores[idx], 
-                linewidth=1.5,
-                alpha=0.5)
+        # plt.plot(line_x, line_y, 
+        #         '--', 
+        #         color=cores[idx], 
+        #         linewidth=1.5,
+        #         alpha=0.5)
         
     except FileNotFoundError:
         print(f"  ✗ frac = {frac}: arquivo não encontrado em {metadata_path}")
@@ -72,9 +72,9 @@ for idx, frac in enumerate(frac_values):
         print(f"  ✗ frac = {frac}: erro - {e}")
 
 # Personalizar gráfico
-plt.xlabel('Probabilidade', fontsize=14)
-plt.ylabel('Número de Observadores (N_O) - Média Final', fontsize=14)
-plt.title('N_O Final vs Probabilidade para diferentes valores de frac\n(frac = 25, 50, 100)', 
+plt.xlabel('Prob', fontsize=14)
+plt.ylabel('(N_O)', fontsize=14)
+plt.title('N_O vs Prob', 
           fontsize=14, fontweight='bold')
 plt.grid(True, alpha=0.3, linestyle='--')
 plt.xticks(np.arange(0.0, 1.1, 0.1), rotation=45)
