@@ -11,17 +11,30 @@
 #include "globals.hpp"
 
 double TRAIL_PROBABILITY = 0.5;
+int SR_C_VALUES = 2;
+int SR_E_VALUES = 2;
 
 int main(int argc, char* argv[]) {
-    // Valor padrão
-    TRAIL_PROBABILITY = 0.5;
+    // Valores padrão
+    double TRAIL_PROBABILITY = 0.5;
+    int SR_C_VALUE = 2;
+    int SR_E_VALUE = 2;
     
-    // Se passar argumento, usa ele
+    // Parse dos argumentos
+    // Exemplo de uso: ./programa 0.5 2 4
     if (argc > 1) {
         TRAIL_PROBABILITY = std::stod(argv[1]);
     }
+    if (argc > 2) {
+        SR_C_VALUE = std::stoi(argv[2]);
+    }
+    if (argc > 3) {
+        SR_E_VALUE = std::stoi(argv[3]);
+    }
     
     std::cout << "Usando TRAIL_PROBABILITY = " << TRAIL_PROBABILITY << std::endl;
+    std::cout << "Usando SR_C_VALUE = " << SR_C_VALUE << std::endl;
+    std::cout << "Usando SR_E_VALUE = " << SR_E_VALUE << std::endl;
     
     const int SIZE = 256;
     const int WIDTH = SIZE;
@@ -41,116 +54,6 @@ for (int frac : frac_values) {
     std::cout << "\n### INICIANDO SIMULAÇÕES PARA FRAC = " << frac << " ###";
     std::cout << "\n########################################\n";
     
-    // // Loop sobre os runs
-    // for (int run = start_run; run <= end_run; run++) {
-    //     std::cout << "\n========================================";
-    //     std::cout << "\n=== PROCESSANDO FRAC=" << frac << " | RUN " << run << " DE " << end_run << " ===";
-    //     std::cout << "\n========================================\n";
-        
-    //     // Criar o grid para cada run
-    //     CellLattice lattice(WIDTH, HEIGHT);
-        
-    //     // Construir caminhos dos arquivos
-    //     std::ostringstream oss_escaper;
-    //     oss_escaper << "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_environment/simulation_frac_" 
-    //                 << frac << "_run_" << run << "/escapers.csv";
-    //     std::string escaper_file = oss_escaper.str();
-        
-    //     std::ostringstream oss_chaser;
-    //     oss_chaser << "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_environment/simulation_frac_" 
-    //                << frac << "_run_" << run << "/chasers.csv";
-    //     std::string chaser_file = oss_chaser.str();
-        
-    //     std::cout << "Carregando arquivos:\n";
-    //     std::cout << "  Escapers: " << escaper_file << "\n";
-    //     std::cout << "  Chasers: " << chaser_file << "\n";
-        
-    //     // Carregar células
-    //     std::vector<Cell> escapers = Cell::loadFromCSV(escaper_file, "O", 2);
-    //     std::vector<Cell> chasers = Cell::loadFromCSV(chaser_file, "N", 2);
-        
-    //     std::cout << "Total: " << escapers.size() << " escapers\n";
-    //     std::cout << "Total: " << chasers.size() << " chasers\n";
-        
-    //     // Verificar se carregou células
-    //     if (escapers.empty() && chasers.empty()) {
-    //         std::cerr << "ERRO: Nenhuma célula carregada para frac=" << frac << " run=" << run << ". Pulando...\n";
-    //         continue;
-    //     }
-        
-    //     // Verificar dados
-    //     if (!lattice.checkDuplicates(chasers, escapers, WIDTH, HEIGHT)) {
-    //         std::cerr << "\nERRO CRÍTICO: Dados inválidos para frac=" << frac << " run=" << run << ". Pulando...\n";
-    //         continue;
-    //     }
-        
-    //     // Colocar objetos no grid
-    //     lattice.placeObjects(chasers, escapers);
-        
-    //     // Verificação de sincronização
-    //     std::cout << "\n=== VERIFICANDO SINCRONIZAÇÃO ===\n";
-        
-    //     int syncErrors = 0;
-        
-    //     // Verificar escapers
-    //     for (const auto& escaper : escapers) {
-    //         int x = escaper.getPositionX();
-    //         int y = escaper.getPositionY();
-    //         std::string gridVal = lattice.getGridValue(x, y);
-    //         if (gridVal != "O") {
-    //             std::cout << "ERRO: Escaper ID=" << escaper.getId() 
-    //                       << " em (" << x << "," << y << ") - Grid tem '" << gridVal << "'\n";
-    //             syncErrors++;
-    //         }
-    //     }
-        
-    //     // Verificar chasers
-    //     for (const auto& chaser : chasers) {
-    //         int x = chaser.getPositionX();
-    //         int y = chaser.getPositionY();
-    //         std::string gridVal = lattice.getGridValue(x, y);
-    //         if (gridVal != "N") {
-    //             std::cout << "ERRO: Chaser ID=" << chaser.getId() 
-    //                       << " em (" << x << "," << y << ") - Grid tem '" << gridVal << "'\n";
-    //             syncErrors++;
-    //         }
-    //     }
-        
-    //     if (syncErrors == 0) {
-    //         std::cout << "✅ Tudo sincronizado! " << escapers.size() << " escapers e " 
-    //                   << chasers.size() << " chasers no grid.\n";
-    //     } else {
-    //         std::cout << "❌ " << syncErrors << " erros de sincronização encontrados!\n";
-    //         std::cin.get();
-    //     }
-        
-    //     // Semente para o run
-    //     //unsigned int runSeed = 1801929750 + run;
-    //     unsigned int runSeed = rd() + run;
-        
-    //     // Diretório de saída
-    //     std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw";
-        
-    //     // Nome do diretório
-    //     std::ostringstream oss_dir;
-
-    //     oss_dir << "simulation_frac_" << frac << "_run_" << run 
-    //             << "_obsprob_" << std::fixed << std::setprecision(2) << TRAIL_PROBABILITY;
-    //     std::string directory_name = oss_dir.str();
-    //     std::string base_name = "results";
-        
-    //     // Criar simulação
-    //     Simulation sim(lattice, chasers, escapers, runSeed, path_out, directory_name, base_name);
-        
-    //     // Executar simulação
-    //     std::cout << "\nExecutando simulação para run " << run << "...\n";
-    //     sim.runSingle(run);
-        
-    //     std::cout << "Run " << run << " concluído!\n";
-    // }
-
-    // Dentro da função que contém o loop
-
 #pragma omp parallel for
 for (int run = start_run; run <= end_run; run++) {
     // Cada thread executa uma run completa
@@ -183,8 +86,8 @@ for (int run = start_run; run <= end_run; run++) {
     }
     
     // Carregar células
-    std::vector<Cell> escapers = Cell::loadFromCSV(escaper_file, "O", 2);
-    std::vector<Cell> chasers = Cell::loadFromCSV(chaser_file, "N", 2);
+    std::vector<Cell> escapers = Cell::loadFromCSV(escaper_file, "O", SR_E_VALUE);
+    std::vector<Cell> chasers = Cell::loadFromCSV(chaser_file, "N", SR_C_VALUE);
     
     // Verificar se carregou células (sem cout protegido é ok, mas pode misturar)
     if (escapers.empty() && chasers.empty()) {
@@ -216,8 +119,11 @@ for (int run = start_run; run <= end_run; run++) {
     std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw";
     
     std::ostringstream oss_dir;
-    oss_dir << "simulation_frac_" << frac << "run" << run 
-            << "obsprob" << std::fixed << std::setprecision(2) << TRAIL_PROBABILITY;
+    oss_dir << "simulation_frac_" << frac 
+            << "_run_" << run 
+            << "_obsprob_" << std::fixed << std::setprecision(2) << TRAIL_PROBABILITY
+            << "_SRC_" << SR_C_VALUE
+            << "_SRE_" << SR_E_VALUE;
     std::string directory_name = oss_dir.str();
     std::string base_name = "results";
     

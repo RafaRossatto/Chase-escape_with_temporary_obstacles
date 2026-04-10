@@ -141,7 +141,7 @@ void Simulation::runSingle(int run)
     escaperBuffer.reserve(10000);
     tempObsBuffer.reserve(10000);
       
-    int m_totalSteps = 1e6;
+    int m_totalSteps = 1e7;
 
     std::cout << "\n=== Starting Simulation - Run " << run << " ===" << std::endl;
     std::cout << "Total steps: " << m_totalSteps << std::endl;

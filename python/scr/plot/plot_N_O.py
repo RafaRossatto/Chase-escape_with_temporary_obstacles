@@ -4,7 +4,7 @@ import numpy as np
 import os
 import glob
 
-frac = 25
+frac = 100
 
 # Caminho para o diretório de dados (NO_x_t)
 base_dir = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/NO_x_t/frac_{frac}"
@@ -53,7 +53,7 @@ for idx, arquivo in enumerate(sorted(arquivos_NO)):
 # Personalizar gráfico
 plt.xlabel('steps', fontsize=12)
 plt.ylabel('N_O', fontsize=12)
-plt.title(f'N_O vs Prob. (frac={frac})', fontsize=14, fontweight='bold')
+plt.title(f'NC=NE*{frac}%', fontsize=14, fontweight='bold')
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=9)
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
