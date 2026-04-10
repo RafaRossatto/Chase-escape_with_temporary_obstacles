@@ -335,7 +335,7 @@ void CellLattice::moveCancerCell(Cell& cell,
             // std::cout << "🔍 HUNTERS encontrados no raio! Usando ESTRATÉGIA DE DENSIDADE..." << std::endl;
             // std::cout << "  (Movendo para direção com MENOR densidade de hunters)" << std::endl;
             //std::cin.get();
-            
+            isFleeing = true;
             int minDensity = currentDensity;
             std::vector<Direction> bestDirections;
             
