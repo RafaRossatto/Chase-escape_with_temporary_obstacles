@@ -10,18 +10,13 @@
 #include "simulation.h"
 #include "globals.hpp"
 
+// DEFINIÇÃO das variáveis globais (inicialização)
 double TRAIL_PROBABILITY = 0.5;
-int SR_C_VALUES = 2;
-int SR_E_VALUES = 2;
+int SR_C_VALUE = 2;
+int SR_E_VALUE = 2;
 
 int main(int argc, char* argv[]) {
-    // Valores padrão
-    double TRAIL_PROBABILITY = 0.5;
-    int SR_C_VALUE = 2;
-    int SR_E_VALUE = 2;
-    
-    // Parse dos argumentos
-    // Exemplo de uso: ./programa 0.5 2 4
+    // MODIFICA as variáveis globais
     if (argc > 1) {
         TRAIL_PROBABILITY = std::stod(argv[1]);
     }
@@ -116,7 +111,7 @@ for (int run = start_run; run <= end_run; run++) {
     unsigned int runSeed = (static_cast<unsigned int>(rd()) + static_cast<unsigned int>(run)) % 2147483647;
     
     // Diretório de saída
-    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw";
+    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob";
     
     std::ostringstream oss_dir;
     oss_dir << "simulation_frac_" << frac 

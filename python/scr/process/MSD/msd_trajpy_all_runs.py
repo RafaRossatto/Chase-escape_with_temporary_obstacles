@@ -1,3 +1,5 @@
+#Nese código ele vai salvar uma saida para cada configuração, ou seja de todos os runs ele vai salvar um msd de ensable médio.
+
 import pandas as pd
 import numpy as np
 from trajpy.trajpy import Trajectory
