@@ -9,13 +9,13 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 
 # Configuração
-sre_list = [2, 4, 8, 10, 12, 14, 16]
+sre_list = [2, 4, 6, 8, 10, 12, 14, 16]
 prob = 1.00
 num_runs = 100
 frac = 25
 
 data_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/"
-output_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/MSD_{frac}_per_run"
+output_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/MSD_p_1/MSD_{frac}_per_run"
 
 Path(output_path).mkdir(parents=True, exist_ok=True)
 L = 256
