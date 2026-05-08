@@ -10,15 +10,32 @@ warnings.filterwarnings('ignore')
 # ============================================
 # CONFIGURAÇÕES
 # ============================================
-base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/"
-output_base = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/gyration_radius"
+base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob/"
+output_base = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/gyration_radius/sre_2_src_2_p_v/"
 
 # Parâmetros
-sre_list = [2, 4, 8, 10, 12, 14, 16]
-frac_list = [25, 50, 100]
-prob = 1.00
+sre = 2  # SRE fixo em 2
+prob_list = [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
 num_runs = 100
 L = 256
+frac_list = [100]
+
+# Dicionário para definir t_min para cada probabilidade (tempo inicial para calcular o raio de giro)
+# Ajuste conforme necessário para cada probabilidade
+t_min_dict = {
+    0.00: 4e5,
+    0.10: 3e5,
+    0.20: 3e5,
+    0.30: 3e6,
+    0.40: 3e5,
+    0.50: 3e5,
+    0.60: 4e5,
+    0.70: 4e5,
+    0.80: 4e5,
+    0.90: 4e5,
+    1.00: 4e5,
+}
+t_min_default = 4e5  # Valor padrão se não definido
 
 # Criar diretório base
 Path(output_base).mkdir(parents=True, exist_ok=True)
@@ -55,6 +72,10 @@ def unwrap_trajectory(df_particle, L):
     
     return df_particle
 
+def filter_by_time(df_particle, t_min):
+    """Filtra a trajetória a partir do tempo mínimo"""
+    return df_particle[df_particle['time'] >= t_min].copy()
+
 def calculate_gyration_radius(positions):
     """Calcula o raio de giro MANUALMENTE"""
     cm = np.mean(positions, axis=0)
@@ -69,7 +90,7 @@ def calculate_gyration_radius(positions):
 
 def process_single_run(args):
     """Processa um único run - isso roda em paralelo para cada run"""
-    frac, sre, run = args
+    frac, prob, run, t_min = args
     
     file_path = f"{base_path}simulation_frac_{frac}_run_{run}_obsprob_{prob:.2f}_SRC_2_SRE_{sre}/results_chasers_run{run}.csv"
     
@@ -79,8 +100,16 @@ def process_single_run(args):
         resultados_run = []
         
         for pid, group in df.groupby("id"):
+            # Desfaz condições de contorno
             df_unwrapped = unwrap_trajectory(group, L)
-            positions = df_unwrapped[["x_unwrapped", "y_unwrapped"]].values
+            
+            # Filtra pelo tempo mínimo
+            df_filtered = filter_by_time(df_unwrapped, t_min)
+            
+            if len(df_filtered) < 2:
+                continue  # Poucos pontos após o filtro
+            
+            positions = df_filtered[["x_unwrapped", "y_unwrapped"]].values
             Rg, Rg_xx, Rg_yy, Rg_xy = calculate_gyration_radius(positions)
             
             resultados_run.append({
@@ -89,15 +118,19 @@ def process_single_run(args):
                 'Rg_xx': Rg_xx,
                 'Rg_yy': Rg_yy,
                 'Rg_xy': Rg_xy,
-                'n_points': len(positions)
+                'n_points': len(positions),
+                't_min_used': t_min,
+                'time_first': df_filtered['time'].min(),
+                'time_last': df_filtered['time'].max()
             })
         
         if resultados_run:
             df_run = pd.DataFrame(resultados_run)
             return {
                 'frac': frac,
-                'sre': sre,
+                'prob': prob,
                 'run': run,
+                't_min': t_min,
                 'success': True,
                 'Rg_mean': df_run['Rg'].mean(),
                 'Rg_std': df_run['Rg'].std(),
@@ -109,32 +142,36 @@ def process_single_run(args):
                 'all_results': df_run
             }
         else:
-            return {'frac': frac, 'sre': sre, 'run': run, 'success': False}
+            return {'frac': frac, 'prob': prob, 'run': run, 'success': False}
             
     except Exception as e:
-        print(f"  Erro no run {run} (frac={frac}, SRE={sre}): {e}")
-        return {'frac': frac, 'sre': sre, 'run': run, 'success': False}
+        print(f"  Erro no run {run} (frac={frac}, prob={prob:.2f}): {e}")
+        return {'frac': frac, 'prob': prob, 'run': run, 'success': False}
 
-def process_frac_sre(frac, sre):
-    """Processa UMA combinação de frac e sre - isso roda em SEQUÊNCIA"""
+def process_frac_prob(frac, prob):
+    """Processa UMA combinação de frac e prob - isso roda em SEQUÊNCIA"""
+    
+    # Obtém t_min para esta probabilidade
+    t_min = t_min_dict.get(prob, t_min_default)
     
     print(f"\n{'='*60}")
-    print(f"Processando frac={frac}, SRE={sre}")
+    print(f"Processando frac={frac}, prob={prob:.2f}, t_min={t_min:.0e}")
     print(f"{'='*60}")
     
     # Diretório de saída
-    output_dir = Path(output_base) / f"frac_{frac}" / f"SRE_{sre}"
+    output_dir = Path(output_base) / f"frac_{frac}" / f"prob_{prob:.2f}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Preparar argumentos para todos os runs
-    args_list = [(frac, sre, run) for run in range(1, num_runs + 1)]
+    # Preparar argumentos para todos os runs (incluindo t_min)
+    args_list = [(frac, prob, run, t_min) for run in range(1, num_runs + 1)]
     
-    # Processar runs em PARALELO (como no MSD)
+    # Processar runs em PARALELO
     all_runs_summary = []
     all_particles_data = []
     successful_runs = 0
     
     print(f"Processando {num_runs} runs em paralelo usando {mp.cpu_count()} cores...")
+    print(f"Usando tempo mínimo t_min = {t_min:.0e}")
     
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         futures = {executor.submit(process_single_run, args): args for args in args_list}
@@ -145,6 +182,7 @@ def process_frac_sre(frac, sre):
             if result['success']:
                 all_runs_summary.append({
                     'run': result['run'],
+                    't_min': result['t_min'],
                     'Rg_mean': result['Rg_mean'],
                     'Rg_std': result['Rg_std'],
                     'Rg_median': result['Rg_median'],
@@ -157,7 +195,7 @@ def process_frac_sre(frac, sre):
                 df_part = result['all_results']
                 df_part['run'] = result['run']
                 df_part['frac'] = frac
-                df_part['sre'] = sre
+                df_part['prob'] = prob
                 all_particles_data.append(df_part)
                 
                 successful_runs += 1
@@ -168,15 +206,16 @@ def process_frac_sre(frac, sre):
     if all_runs_summary:
         # Salvar resultados
         df_summary = pd.DataFrame(all_runs_summary)
-        df_summary.to_csv(output_dir / 'summary_runs.csv', index=False)
+        df_summary.to_csv(output_dir / f'summary_runs_tmin{t_min:.0e}.csv', index=False)
         
         df_all_particles = pd.concat(all_particles_data, ignore_index=True)
-        df_all_particles.to_csv(output_dir / 'all_particles.csv', index=False)
+        df_all_particles.to_csv(output_dir / f'all_particles_tmin{t_min:.0e}.csv', index=False)
         
         # Estatísticas finais
         final_stats = {
             'frac': frac,
-            'sre': sre,
+            'prob': prob,
+            't_min': t_min,
             'total_runs': successful_runs,
             'total_particles': len(df_all_particles),
             'Rg_mean_overall': df_all_particles['Rg'].mean(),
@@ -188,12 +227,14 @@ def process_frac_sre(frac, sre):
         }
         
         df_stats = pd.DataFrame([final_stats])
-        df_stats.to_csv(output_dir / 'final_statistics.csv', index=False)
+        df_stats.to_csv(output_dir / f'final_statistics_tmin{t_min:.0e}.csv', index=False)
         
         # Salvar resumo em texto
-        with open(output_dir / 'results.txt', 'w') as f:
+        with open(output_dir / f'results_tmin{t_min:.0e}.txt', 'w') as f:
             f.write("="*60 + "\n")
-            f.write(f"RESULTADOS - frac={frac}, SRE={sre}\n")
+            f.write(f"RESULTADOS - RAIO DE GIRO\n")
+            f.write(f"frac={frac}, prob={prob:.2f}, SRE={sre}\n")
+            f.write(f"Tempo mínimo: {t_min:.0e}\n")
             f.write("="*60 + "\n")
             f.write(f"Runs processados: {successful_runs}/{num_runs}\n")
             f.write(f"Total de partículas: {final_stats['total_particles']}\n\n")
@@ -207,11 +248,12 @@ def process_frac_sre(frac, sre):
             f.write(f"  Rg_xy:  {final_stats['Rg_xy_mean']:.4f}\n")
             f.write("="*60 + "\n")
         
-        print(f"  ✓ frac={frac}, SRE={sre} concluído!")
+        print(f"  ✓ frac={frac}, prob={prob:.2f} concluído!")
         print(f"    Rg médio = {final_stats['Rg_mean_overall']:.4f} ± {final_stats['Rg_std_overall']:.4f}")
+        print(f"    Usando t_min = {t_min:.0e}")
         return final_stats
     else:
-        print(f"  ✗ frac={frac}, SRE={sre} falhou!")
+        print(f"  ✗ frac={frac}, prob={prob:.2f} falhou!")
         return None
 
 # ============================================
@@ -219,23 +261,25 @@ def process_frac_sre(frac, sre):
 # ============================================
 if __name__ == "__main__":
     print("="*60)
-    print("CÁLCULO DO RAIO DE GIRO")
+    print("CÁLCULO DO RAIO DE GIRO (variando probabilidade)")
+    print(f"SRE fixo = {sre}")
     print("="*60)
-    print(f"SREs: {sre_list}")
+    print(f"Probabilidades: {prob_list}")
     print(f"Frações: {frac_list}")
-    print(f"Runs por SRE: {num_runs}")
+    print(f"Runs por configuração: {num_runs}")
     print(f"Cores disponíveis: {mp.cpu_count()}")
     print("="*60)
-    print("\nProcessando UMA configuração por vez")
-    print("Cada configuração usa todos os núcleos para os 100 runs")
+    print("\nConfiguração de t_min por probabilidade:")
+    for prob, tmin in t_min_dict.items():
+        print(f"  prob={prob:.2f}: t_min = {tmin:.0e}")
     print("="*60)
     
     all_results = []
     
     # Loop SEQUENCIAL sobre as configurações
     for frac in frac_list:
-        for sre in sre_list:
-            result = process_frac_sre(frac, sre)
+        for prob in prob_list:
+            result = process_frac_prob(frac, prob)
             if result:
                 all_results.append(result)
     
@@ -244,9 +288,24 @@ if __name__ == "__main__":
     # ============================================
     if all_results:
         df_global = pd.DataFrame(all_results)
-        df_global.to_csv(Path(output_base) / 'global_results.csv', index=False)
+        df_global.to_csv(Path(output_base) / f'global_results_SRE{sre}.csv', index=False)
         
         print("\n" + "="*60)
         print("RESULTADOS GLOBAIS")
+        print(f"SRE = {sre}")
         print("="*60)
-        print(df_global[['frac', 'sre', 'Rg_mean_overall', 'Rg_std_overall']].to_string(index=False))
+        print(df_global[['frac', 'prob', 't_min', 'Rg_mean_overall', 'Rg_std_overall', 'total_particles']].to_string(index=False))
+        
+        # Salvar também em formato legível
+        with open(Path(output_base) / f'global_results_SRE{sre}.txt', 'w') as f:
+            f.write(f"RESULTADOS GLOBAIS - RAIO DE GIRO (SRE={sre})\n")
+            f.write("="*60 + "\n")
+            f.write("frac\tprob\tt_min\tRg_mean\tRg_std\tRg_median\tn_particles\n")
+            for _, row in df_global.iterrows():
+                f.write(f"{int(row['frac'])}\t{row['prob']:.2f}\t{row['t_min']:.0e}\t{row['Rg_mean_overall']:.4f}\t{row['Rg_std_overall']:.4f}\t{row['Rg_median_overall']:.4f}\t{row['total_particles']}\n")
+                
+    
+    print("\n" + "="*60)
+    print("PROCESSAMENTO CONCLUÍDO!")
+    print(f"Resultados salvos em: {output_base}")
+    print("="*60)

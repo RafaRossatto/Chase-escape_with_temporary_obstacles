@@ -1,20 +1,20 @@
+#Nese código ele vai salvar uma saida para cada run de configuração, ou seja, ele vai salvar para cada congir o msd de ensable.
+
 import pandas as pd
 import numpy as np
 from trajpy.trajpy import Trajectory
+from scipy.interpolate import interp1d
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 
 # Configuração
-prob_list = [round(p, 2) for p in np.arange(0.00, 1.01, 0.10)]
-sre_fixo = 2
+sre_list = [2, 4, 6, 8, 10, 12, 14, 16]
+prob = 1.00
 num_runs = 100
-frac_list = [25, 50, 100]
+frac_list = [25, 50, 100]  # Lista de valores de frac
 
-base_data_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob/"
-base_output_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_per_run_v_prob"
-
-Path(base_output_path).mkdir(parents=True, exist_ok=True)
+data_path_base = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/prob_1"
 L = 256
 
 def unwrap_trajectory(df_particle, L):
@@ -46,13 +46,12 @@ def unwrap_trajectory(df_particle, L):
     
     return df_particle
 
-def process_single_run(frac, prob, sre, run):
+def process_single_run(sre, run, frac):
     """Processa um único run e retorna o MSD"""
-    prob_str = f"{prob:.2f}"
-    file_path = f"{base_data_path}simulation_frac_{frac}_run_{run}_obsprob_{prob_str}_SRC_2_SRE_{sre}/results_chasers_run{run}.csv"
+    data_path = f"{data_path_base}/simulation_frac_{frac}_run_{run}_obsprob_{prob:.2f}_SRC_2_SRE_{sre}/results_chasers_run{run}.csv"
     
     try:
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(data_path)
         
         df_unwrapped_list = []
         for pid, group in df.groupby("id"):
@@ -80,8 +79,8 @@ def process_single_run(frac, prob, sre, run):
         
         return {
             'run': run, 
+            'sre': sre,
             'frac': frac,
-            'prob': prob,
             'times': times, 
             'msd': msd_ensemble, 
             'success': True
@@ -90,62 +89,81 @@ def process_single_run(frac, prob, sre, run):
     except Exception as e:
         return {
             'run': run, 
+            'sre': sre,
             'frac': frac,
-            'prob': prob,
             'success': False, 
             'error': str(e)
         }
 
-def process_probability(frac, prob):
-    """Processa uma probabilidade completa - salva cada run individualmente"""
+def process_sre(sre, frac):
+    """Processa um SRE completo - salva cada run individualmente"""
     print(f"\n{'='*60}")
-    print(f"Processando: frac = {frac}%, prob = {prob:.2f}")
+    print(f"Processando SRE = {sre}, FRAC = {frac}")
     print(f"{'='*60}")
     
-    output_dir = Path(base_output_path) / f"frac_{frac}" / f"obsprob_{prob:.2f}"
+    # Diretório de saída para este frac
+    output_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_p_1/MSD_{frac}_per_run"
+    Path(output_path).mkdir(parents=True, exist_ok=True)
+    
+    # Diretório principal para este SRE
+    output_dir = Path(output_path) / f"SRE_{sre}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Diretório para runs individuais
     runs_dir = output_dir / "individual_runs"
     runs_dir.mkdir(parents=True, exist_ok=True)
     
-    # Processa run 1 para referência
+    # Primeiro, processa run 1 para obter tempos de referência
     print(f"  Obtendo tempos de referência...")
-    ref_result = process_single_run(frac, prob, sre_fixo, 1)
+    ref_result = process_single_run(sre, 1, frac)
     
     if not ref_result['success']:
-        print(f"  ✗ Erro ao processar run de referência: {ref_result.get('error', 'Unknown error')}")
+        print(f"  ✗ Erro ao processar run de referência")
         return None
     
     reference_times = ref_result['times']
-    all_runs_msd = [ref_result['msd']]
-    successful_runs = 1
+    all_runs_msd = []
+    successful_runs = 0
     
-    # Salva run 1
+    # Salva o run 1 individualmente
     df_run1 = pd.DataFrame({
         'time': reference_times,
         'msd': ref_result['msd']
     })
     df_run1.to_csv(runs_dir / f"run_001_msd.csv", index=False)
+    all_runs_msd.append(ref_result['msd'])
+    successful_runs = 1
     
     # Processa runs 2..num_runs em paralelo
     print(f"  Processando runs 2..{num_runs} em paralelo (usando {mp.cpu_count()} cores)...")
     
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
-        futures = {executor.submit(process_single_run, frac, prob, sre_fixo, run): run 
+        # Submete todos os runs restantes
+        futures = {executor.submit(process_single_run, sre, run, frac): run 
                   for run in range(2, num_runs + 1)}
         
+        # Coleta os resultados
         for future in as_completed(futures):
             result = future.result()
             if result['success']:
-                # Como os tempos são iguais, usamos diretamente sem interpolação
+                # Interpolar se necessário
+                if len(result['times']) != len(reference_times):
+                    f_interp = interp1d(result['times'], result['msd'], 
+                                       kind='linear', fill_value='extrapolate')
+                    msd_interp = f_interp(reference_times)
+                    msd_final = msd_interp
+                else:
+                    msd_final = result['msd']
+                
+                # Salva MSD individual deste run
                 df_run = pd.DataFrame({
-                    'time': reference_times,  # ou result['times'] - são iguais
-                    'msd': result['msd']
+                    'time': reference_times,
+                    'msd': msd_final
                 })
                 run_filename = runs_dir / f"run_{result['run']:03d}_msd.csv"
                 df_run.to_csv(run_filename, index=False)
                 
-                all_runs_msd.append(result['msd'])
+                all_runs_msd.append(msd_final)
                 successful_runs += 1
             
             if successful_runs % 10 == 0:
@@ -156,46 +174,35 @@ def process_probability(frac, prob):
         msd_mean = np.mean(all_runs_msd, axis=0)
         msd_std = np.std(all_runs_msd, axis=0)
         
+        # Salva estatísticas consolidadas
         df_results = pd.DataFrame({
             'time': reference_times,
             'msd_mean': msd_mean,
             'msd_std': msd_std
         })
-        csv_path = output_dir / f"msd_ensemble_frac_{frac}_obsprob_{prob:.2f}.csv"
+        csv_path = output_dir / f"msd_ensemble_SRE_{sre}.csv"
         df_results.to_csv(csv_path, index=False)
         
-        print(f"  ✓ Completo: frac={frac}%, prob={prob:.2f} - {successful_runs}/{num_runs} runs")
-        return {'frac': frac, 'prob': prob, 'success': True}
+        print(f"  ✓ SRE={sre}, FRAC={frac} concluído: {successful_runs}/{num_runs} runs, MSD final={msd_mean[-1]:.2f}")
+        return {'sre': sre, 'frac': frac, 'success': True}
     else:
-        print(f"  ✗ Nenhum run válido")
+        print(f"  ✗ Nenhum run válido para SRE={sre}, FRAC={frac}")
         return None
 
 # Execução principal
 if __name__ == "__main__":
-    total_combinations = len(frac_list) * len(prob_list)
-    print(f"Processando combinações de frac e probabilidade")
-    print(f"Frações: {frac_list}%")
-    print(f"Probabilidades: {len(prob_list)} valores de 0.00 a 1.00")
-    print(f"Total de combinações: {total_combinations}")
-    
-    completed = 0
-    failed = 0
+    print(f"Processando FRACs {frac_list} sequencialmente")
+    print(f"Cada SRE terá paralelismo interno de {mp.cpu_count()} cores")
+    print(f"Total de combinações a processar: {len(sre_list) * len(frac_list)}")
     
     for frac in frac_list:
         print(f"\n{'#'*60}")
-        print(f"# Processando fração: {frac}%")
+        print(f"# INICIANDO PROCESSAMENTO PARA FRAC = {frac}")
         print(f"{'#'*60}")
         
-        for prob in prob_list:
-            result = process_probability(frac, prob)
-            if result and result['success']:
-                completed += 1
-            else:
-                failed += 1
-            
-            print(f"Progresso: {completed + failed}/{total_combinations}")
+        for sre in sre_list:
+            process_sre(sre, frac)
     
     print(f"\n{'='*60}")
     print("PROCESSAMENTO CONCLUÍDO!")
-    print(f"Completos: {completed}")
-    print(f"Falhas: {failed}")
+    print(f"Resultados salvos em: /media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/MSD_p_1/")
