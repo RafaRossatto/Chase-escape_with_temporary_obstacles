@@ -111,7 +111,8 @@ for (int run = start_run; run <= end_run; run++) {
     unsigned int runSeed = (static_cast<unsigned int>(rd()) + static_cast<unsigned int>(run)) % 2147483647;
     
     // Diretório de saída
-    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob";
+    //std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob";
+    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/prob_1";
     
     std::ostringstream oss_dir;
     oss_dir << "simulation_frac_" << frac 
