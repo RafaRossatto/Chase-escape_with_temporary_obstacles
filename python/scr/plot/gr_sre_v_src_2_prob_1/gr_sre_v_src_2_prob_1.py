@@ -9,19 +9,19 @@ from scipy import stats
 # ============================================
 # CONFIGURAÇÕES - RAIO DE GIRO (Rg)
 # ============================================
-prob = 1.00  # Probabilidade fixa
+prob = 0.50  # Probabilidade fixa
 sre_list = [2, 4, 6, 8, 10, 12, 14, 16]  # SREs para comparar
 frac_list = [25, 50, 100]  # Três frações para comparar
 
 # Base paths para cada fração - DADOS DE RAIO DE GIRO
 base_paths = {
-    25: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_1/frac_25"),
-    50: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_1/frac_50"),
-    100: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_1/frac_100")
+    25: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_05/frac_25"),
+    50: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_05/frac_50"),
+    100: Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_05/frac_100")
 }
 
 # Caminho de saída para os plots
-output_figures = Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/H_rg/sre_v_src_2_prob_1")
+output_figures = Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/H_rg/sre_v_src_2_prob_05")
 output_figures.mkdir(parents=True, exist_ok=True)
 
 # Cores para cada fração

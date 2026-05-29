@@ -23,7 +23,6 @@ base_paths = {
 # NOVO CAMINHO DE SAÍDA
 output_figures = Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/H_expoentes/SRE_v_SRC_2_p_1")
 output_figures.mkdir(parents=True, exist_ok=True)
-
 # Cores para cada fração
 frac_colors = {
     25: 'blue',
@@ -140,6 +139,61 @@ def plot_curves_for_sre(sre):
     
     return fig
 
+def plot_summary_statistics():
+    """Plota um resumo das médias e desvios dos expoentes alfa para todos os SREs"""
+    print("\n" + "="*60)
+    print("Gerando gráfico de resumo (médias e desvios do expoente alfa)")
+    print("="*60)
+
+    fig, ax = plt.subplots(figsize=(12, 7))  # CORRIGIDO: espaço depois da vírgula
+    summary_data = {frac: {'sres': [], 'means': [], 'stds': []} for frac in frac_list}  # CORRIGIDO: espaços
+
+    for sre in sre_list:
+        for frac in frac_list:
+            alphas = load_exponents_for_sre(sre, frac)
+            if alphas is not None and len(alphas) > 0:
+                summary_data[frac]['sres'].append(sre)
+                summary_data[frac]['means'].append(np.mean(alphas))
+                summary_data[frac]['stds'].append(np.std(alphas))
+    
+    for frac in frac_list:
+        if summary_data[frac]['sres']:  # CORRIGIDO: adicionado [frac]
+            ax.errorbar(  # CORRIGIDO: errorbar (com 'r')
+                summary_data[frac]['sres'],  # CORRIGIDO: adicionado [frac]
+                summary_data[frac]['means'],  # CORRIGIDO: adicionado [frac]
+                yerr=summary_data[frac]['stds'],  # CORRIGIDO: adicionado [frac] e =
+                color=frac_colors[frac],
+                marker='o',
+                capsize=5,
+                capthick=2,
+                elinewidth=2,
+                markersize=8,
+                linewidth=2,
+                label=f"{frac_labels[frac]}"
+            )
+    
+    # Linha para α=1 (difusão normal)
+    ax.axhline(1.0, color='black', linestyle=':', linewidth=2, alpha=0.8, 
+              label='α = 1 (difusão normal)')
+    
+    ax.set_xlabel('SRE', fontsize=14)
+    ax.set_ylabel('Expoente α (média ± desvio)', fontsize=14)
+    ax.set_title(f'Evolução do Expoente α com SRE - Probabilidade = {prob:.2f}', fontsize=16, fontweight='bold')
+    ax.legend(loc='best', fontsize=11)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # Ajusta limites do eixo y (opcional)
+    #ax.set_ylim(0.1, 1.1)
+    
+    plt.tight_layout()
+    
+    output_file = output_figures / f"summary_expoentes_vs_sre_prob{prob:.2f}.png"
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    
+    print(f"✓ Figura de resumo salva: {output_file}")
+    print(f"  Tamanho: {output_file.stat().st_size} bytes")
+
 # ============================================
 # EXECUÇÃO PRINCIPAL
 # ============================================
@@ -154,6 +208,7 @@ if __name__ == "__main__":
     
     for sre in sre_list:
         plot_curves_for_sre(sre)
+    plot_summary_statistics()
     
     print("\n" + "="*60)
     print("PROCESSAMENTO CONCLUÍDO!")

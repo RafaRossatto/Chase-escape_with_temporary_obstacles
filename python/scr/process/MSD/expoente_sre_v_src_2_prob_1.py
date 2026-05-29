@@ -6,7 +6,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 
 # Configuração
-prob = 1.00  # Probabilidade fixa em 1.00
+prob = 0.10  # Probabilidade fixa em 1.00
 sre_list = [2, 4, 6, 8, 10, 12, 14, 16]  # SREs de 2 a 16 de 2 em 2
 frac = 100
 
@@ -23,8 +23,8 @@ t_min_dict = {
 }
 
 # Caminhos
-input_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_p_1/frac_{frac}"
-output_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/{frac}/sre_variation_prob{prob:.0f}"
+input_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_p_03/frac_{frac}"
+output_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/{frac}/sre_variation_prob{prob:.2f}"
 
 def power_law_log(log_t, alpha, log_c):
     """Função power law no espaço log: log10(MSD) = log_c + alpha * log10(t)"""

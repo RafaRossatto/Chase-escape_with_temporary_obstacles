@@ -10,12 +10,12 @@ warnings.filterwarnings('ignore')
 # ============================================
 # CONFIGURAÇÕES
 # ============================================
-base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/prob_1/"
-output_base = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_1"
+base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/sre_v_prob_0_50/"
+output_base = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/gyration_radius/sre_v_src_2_p_05"
 
 # Parâmetros
 sre_list = [2, 4,6, 8, 10, 12, 14, 16]
-prob = 1.00
+prob = 0.50
 num_runs = 100
 L = 256
 

@@ -8,19 +8,21 @@ import numpy as np
 
 
 # ==================== PARÂMETROS CONFIGURÁVEIS ====================
-frac = 25           # Fração (25, 50, 75, etc.)
+frac = 5           # Fração (25, 50, 75, etc.)
 sre = 2             # SRE que você quer plotar (2, 4, 8, 10, 12, 14, 16)
 src = 2
-prob = 1.00
-t_min = 10e5         # Posição da linha vertical
+prob = 0.10
+t_min = 1e6         # Posição da linha vertical
 n = 180              # Número de pontos para o fit (últimos n pontos)
+
+
 # ==================================================================
 
-output_dir = Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/MSD_estabilidade/SRE_v_SRC_2_p_1")
+output_dir = Path("/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/MSD_estabilidade/SRE_v_SRC_2_p_05")
 output_dir.mkdir(parents=True, exist_ok=True)  # Cria o diretório se não existir
 
 # Caminho do arquivo
-data_path = Path(f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_p_1/frac_{frac}/SRE_{sre}")
+data_path = Path(f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_sre_2_src_2_prob_v_frac_v/frac_{frac}/SRE_{sre}")
 file_path = data_path / f"msd_ensemble_SRE_{sre}.csv"
 
 # Carrega os dados
