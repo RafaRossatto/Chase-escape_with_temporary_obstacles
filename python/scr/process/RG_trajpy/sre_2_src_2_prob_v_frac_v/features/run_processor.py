@@ -40,10 +40,10 @@ class RunProcessor:
 
         # Calcular dados de raio de giro para cada partícula usando trajpy
         # Retorna lista de dicionários com tensor, autovalores, autovetores
-        gyration_data_per_particle = self.rg_calculator.calculate_for_all_particles(positions_3d)
+        gyration_data_per_particle = self.rg_calculator.calculate_for_all_particle(positions_3d)
 
         # Extrair Rg^{2} escalar para cada partícula
-        rg_squered_per_particle = np.array([
+        rg_squared_per_particle = np.array([
             self.rg_calculator.extract_rg_squared(data)for data in gyration_data_per_particle
         ])
 
@@ -55,7 +55,7 @@ class RunProcessor:
             frac=frac,
             prob=prob,
             times=times,
-            rg_squere= rg_squered_per_particle,
+            rg_squared= rg_squared_per_particle,
             eigenvalues= eigenvalues_per_particle,
             success= True
         )

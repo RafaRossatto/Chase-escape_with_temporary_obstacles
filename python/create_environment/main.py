@@ -2,7 +2,7 @@ from features.graph import VonNeumannGraph
 from features.graph import random
 
 def main() -> None:
-    graph = VonNeumannGraph(n_nodes=256)
+    graph = VonNeumannGraph(n_nodes=128)
 
     # print(f"Nós: {graph.get_num_nodes()}")    
     # print(f"Arestas: {graph.get_num_edges()}")
@@ -47,7 +47,8 @@ def main() -> None:
 
 
     # Executa 100 simulações para cada fração
-    fracoes_chasers = [0.25, 0.50, 1.0]
+    fracoes_chasers = [0.05, 0.50, 1.0]
+    #fracoes_chasers = [0.05,0.10,0.15,0.20,0.30,0.35,0.40,0.45,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95]
 
     for fracao in fracoes_chasers:
         print(f"\n=== Configuração: {fracao*100}% dos escapers ===")
@@ -123,8 +124,6 @@ def main() -> None:
             print(f"  - Escapers: {len(escapers)} (10% do grid)")
             print(f"  - Chasers: {len(chasers)} ({fracao*100:.0f}% dos escapers)")
             print(f"  - Total ocupado: {len(escapers) + len(chasers)}/{total_vertices} ({((len(escapers) + len(chasers))/total_vertices)*100:.1f}%)")
-
-
 
 
     print("\nTodas as 100 simulações concluídas!")

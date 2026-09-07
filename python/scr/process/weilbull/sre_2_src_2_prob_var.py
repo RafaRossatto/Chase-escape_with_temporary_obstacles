@@ -14,11 +14,11 @@ import matplotlib.pyplot as plt
 # CONFIGURAÇÃO
 # ============================================
 
-base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob/"
+base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/sre_2_src_2_prob_v_frac_v/"
 
 # Lista de probabilidades e frações a serem processadas
-probabilidades = [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
-fracoes = [25, 50, 100]
+probabilidades = [round(p, 2) for p in np.arange(0.00, 1.01, 0.10)]
+fracoes = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
 
 # Número máximo de runs esperado
 num_runs = 100

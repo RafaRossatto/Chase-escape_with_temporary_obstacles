@@ -95,14 +95,15 @@ def main():
     tamanho_janela = 10          # (não usado, mas mantido para compatibilidade)
     
     # Listas de parâmetros
-    frac_values = list(range(5, 105, 5))  # 5, 10, 15, ..., 100
+    #frac_values = list(range(5, 105, 5))  # 5, 10, 15, ..., 100
+    frac_values = [5,50,100]
     obs_values = [round(i/10, 2) for i in range(0, 11)]  # 0.00, 0.10, ..., 1.00
     
     # Lista para armazenar todos os resultados
     resultados = []
     
     # Path base
-    base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_sre_2_src_2_prob_v_frac_v/"
+    base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/512/MSD_sre_2_src_2_prob_v_frac_v/"
     
     print("="*80)
     print("ANÁLISE POR RESÍDUOS - PROCESSANDO TODAS COMBINAÇÕES")

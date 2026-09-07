@@ -9,7 +9,7 @@ base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_
 base_out = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data_processed/NO_x_t/frac_{frac}"
 
 # Lista de valores de prob (0.10 a 1.00 com passo 0.10)
-prob_values = np.arange(0.10, 1.01, 0.10)
+prob_values = np.arange(0.00, 1.01, 0.10)
 
 # Número de runs
 num_runs = 100

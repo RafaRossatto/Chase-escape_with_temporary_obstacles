@@ -195,7 +195,7 @@ class VonNeumannGraph:
             seed: Seed usada na simulação
         """
         # Define o diretório base com o prefixo como subpasta
-        diretorio_base = f"../../data/data_environment/{prefixo}"
+        diretorio_base = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_environment/128/{prefixo}"
         
         # Cria o diretório se não existir
         os.makedirs(diretorio_base, exist_ok=True)

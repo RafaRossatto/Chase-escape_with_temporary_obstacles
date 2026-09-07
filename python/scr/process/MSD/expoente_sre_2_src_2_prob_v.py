@@ -7,63 +7,6 @@ import multiprocessing as mp
 
 # Configuração
 sre = 2  # SRE fixo em 2
-prob_list = [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
-frac = 100
-
-# Dicionário para definir t_min para cada probabilidade
-t_min_dict = {
-    0.00: 4e5,
-    0.10: 3e5,
-    0.20: 3e5,
-    0.30: 3e6,
-    0.40: 3e5,
-    0.50: 3e5,
-    0.60: 4e5,
-    0.70: 4e5,
-    0.80: 4e5,
-    0.90: 4e5,
-    1.00: 4e5,
-}
-
-
-# frac = 50
-
-# # Dicionário para definir t_min para cada probabilidade
-# t_min_dict = {
-#     0.00: 5e5,
-#     0.10: 5e5,
-#     0.20: 5e5,
-#     0.30: 5e6,
-#     0.40: 5e5,
-#     0.50: 6e5,
-#     0.60: 7e5,
-#     0.70: 6e5,
-#     0.80: 6e5,
-#     0.90: 6e5,
-#     1.00: 6e5,
-# }
-
-
-# frac = 25
-
-# # Dicionário para definir t_min para cada probabilidade
-# t_min_dict = {
-#     0.00: 4e5,
-#     0.10: 4e5,
-#     0.20: 6e5,
-#     0.30: 1e6,
-#     0.40: 3e5,
-#     0.50: 7e5,
-#     0.60: 8e5,
-#     0.70: 8e5,
-#     0.80: 8e5,
-#     0.90: 8e5,
-#     1.00: 8e5,
-# }
-
-# Caminhos
-input_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_per_run_v_prob/frac_{frac}"
-output_base_path = f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/{frac}/prob_variation"
 
 def power_law_log(log_t, alpha, log_c):
     """Função power law no espaço log: log10(MSD) = log_c + alpha * log10(t)"""
@@ -84,45 +27,58 @@ def compute_exponent_from_csv(run_csv_path, t_min):
         log_t = np.log10(df_fit['time'].values)
         log_msd = np.log10(df_fit['msd'].values)
         
-        # Ajuste linear no espaço log (mais estável para power laws)
+        # Ajuste linear no espaço log
         popt, pcov = curve_fit(
             power_law_log, 
             log_t, 
             log_msd,
-            p0=[1.0, 0.0],  # alpha=1, log10(c)=0 -> c=1
+            p0=[1.0, 0.0],
             maxfev=5000
         )
         
         alpha = popt[0]  # expoente
-        log_c = popt[1]  # log10(c)
-        c = 10**log_c    # coeficiente no espaço linear
         
-        # Calcula R² do ajuste no espaço log
-        residuals = log_msd - power_law_log(log_t, alpha, log_c)
-        ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((log_msd - np.mean(log_msd))**2)
-        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else np.nan
-        
-        alpha_err = np.sqrt(np.diag(pcov))[0] if len(pcov) > 0 else np.nan
-        
-        return {
-            'alpha': alpha,
-            'alpha_error': alpha_err,
-            'c': c,
-            'log_c': log_c,
-            'r_squared': r_squared,
-            'n_points': len(df_fit),
-            't_min_used': t_min,
-            't_max_used': df_fit['time'].max(),
-            'msd_final': df['msd'].iloc[-1] if len(df) > 0 else np.nan
-        }, None
+        return {'alpha': alpha}, None
         
     except Exception as e:
         return None, str(e)
 
-def process_probability(prob):
+def load_t_min_from_conf(frac, prob):
+    """Carrega o t_min (primeiro_x) do arquivo conf.csv"""
+    conf_path = Path(f"/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/config.csv")
+    
+    if not conf_path.exists():
+        print(f"  ✗ Arquivo conf.csv não encontrado em: {conf_path}")
+        return None
+    
+    try:
+        df_conf = pd.read_csv(conf_path)
+        
+        # Filtra pela fração e probabilidade
+        mask = (df_conf['frac'] == frac) & (df_conf['obsprob'] == prob)
+        df_filtered = df_conf[mask]
+        
+        if len(df_filtered) == 0:
+            print(f"  ✗ Configuração não encontrada: frac={frac}, obsprob={prob}")
+            return None
+        
+        # Pega o primeiro_x (t_min) da primeira ocorrência
+        t_min = df_filtered['primeiro_x'].iloc[0]
+        
+        return t_min
+        
+    except Exception as e:
+        print(f"  ✗ Erro ao ler conf.csv: {e}")
+        return None
+
+def process_probability(frac, prob, output_base_path, input_base_path):
     """Processa uma probabilidade: calcula expoentes para todos os runs"""
-    t_min = t_min_dict.get(prob, 20e4)
+    # Carrega t_min do arquivo conf.csv
+    t_min = load_t_min_from_conf(frac, prob)
+    
+    if t_min is None:
+        print(f"  ✗ Não foi possível obter t_min para frac={frac}, prob={prob}")
+        return None
     
     # Constrói o caminho corretamente
     prob_input_dir = Path(input_base_path) / f"obsprob_{prob:.2f}" / "individual_runs"
@@ -140,9 +96,9 @@ def process_probability(prob):
         print(f"  ✗ Nenhum arquivo de run encontrado para prob={prob:.2f}")
         return None
     
-    print(f"  Processando {len(run_files)} runs para prob={prob:.2f} (t_min={t_min:.0e})...")
+    print(f"  Processando {len(run_files)} runs para frac={frac}, prob={prob:.2f} (t_min={t_min:.0e})...")
     
-    results = []
+    alphas = []
     successful = 0
     
     for run_file in run_files:
@@ -151,93 +107,106 @@ def process_probability(prob):
         result, error = compute_exponent_from_csv(run_file, t_min)
         
         if result is not None:
-            results.append({
-                'run': run_num,
-                **result
-            })
+            alphas.append(result['alpha'])
             successful += 1
         else:
             if error:
                 print(f"    Run {run_num}: erro - {error}")
     
-    if results:
-        df_results = pd.DataFrame(results)
-        df_results = df_results.sort_values('run')
+    if alphas:
+        # Calcula estatísticas
+        alpha_mean = np.mean(alphas)
+        alpha_std = np.std(alphas, ddof=1)  # Desvio padrão amostral
+        alpha_var = np.var(alphas, ddof=1)   # Variância amostral
         
-        output_csv = prob_output_dir / f"expoentes_prob_{prob:.2f}_tmin{t_min:.0e}.csv"
+        # Salva resultados individuais (opcional - pode remover se não precisar)
+        df_results = pd.DataFrame({'alpha': alphas})
+        output_csv = prob_output_dir / f"expoentes_prob_{prob:.2f}.csv"
         df_results.to_csv(output_csv, index=False)
         
-        alpha_mean = df_results['alpha'].mean()
-        alpha_std = df_results['alpha'].std()
-        alpha_std_error = df_results['alpha'].sem()
-        mean_r_squared = df_results['r_squared'].mean()
-        
-        print(f"  ✓ prob={prob:.2f}: {successful}/{len(run_files)} runs válidos")
-        print(f"    α médio = {alpha_mean:.4f} ± {alpha_std:.4f} (std)")
-        print(f"    R² médio = {mean_r_squared:.4f}")
+        print(f"  ✓ frac={frac}, prob={prob:.2f}: {successful}/{len(run_files)} runs válidos")
+        print(f"    α médio = {alpha_mean:.6f}")
+        print(f"    α std   = {alpha_std:.6f}")
+        print(f"    α var   = {alpha_var:.6f}")
         
         return {
+            'frac': frac,
             'prob': prob,
             't_min': t_min,
             'alpha_mean': alpha_mean,
             'alpha_std': alpha_std,
-            'alpha_std_error': alpha_std_error,
-            'mean_r_squared': mean_r_squared,
+            'alpha_var': alpha_var,
             'n_runs': successful,
             'n_total_runs': len(run_files)
         }
     else:
-        print(f"  ✗ Nenhum run válido para prob={prob:.2f}")
+        print(f"  ✗ Nenhum run válido para frac={frac}, prob={prob:.2f}")
         return None
 
-def process_prob_parallel(prob):
-    """Wrapper para processamento paralelo por probabilidade"""
-    return process_probability(prob)
-
-if __name__ == "__main__":
-    print(f"{'='*60}")
-    print(f"Calculando expoentes α (MSD ~ t^α) - AJUSTE LOG-LOG")
-    print(f"SRE fixo = {sre}")
-    print(f"Fração: {frac}%")
-    print(f"Probabilidades: {len(prob_list)} valores")
-    print(f"{'='*60}\n")
-    
-    for prob, tmin in t_min_dict.items():
-        print(f"  prob={prob:.2f}: t_min = {tmin:.0e}")
-    
-    print(f"\nProcessando {len(prob_list)} probabilidades em paralelo...\n")
-    
-    n_cores = min(mp.cpu_count(), len(prob_list))
-    print(f"Usando {n_cores} cores\n")
+def process_all_combinations(frac_list, prob_list, input_base_path_pattern, output_base_path_pattern):
+    """Processa todas as combinações de frações e probabilidades"""
     
     all_results = []
     
-    with ProcessPoolExecutor(max_workers=n_cores) as executor:
-        futures = {executor.submit(process_prob_parallel, prob): prob for prob in prob_list}
+    for frac in frac_list:
+        print(f"\n{'='*60}")
+        print(f"Processando fração: {frac}%")
+        print(f"{'='*60}")
         
-        for future in as_completed(futures):
-            prob = futures[future]
-            try:
-                result = future.result()
-                if result:
-                    all_results.append(result)
-            except Exception as e:
-                print(f"Erro na prob {prob:.2f}: {e}")
+        # Constrói os caminhos específicos para esta fração
+        input_base_path = input_base_path_pattern.format(frac=frac)
+        output_base_path = output_base_path_pattern.format(frac=frac)
+        
+        # Cria diretório de saída
+        Path(output_base_path).mkdir(parents=True, exist_ok=True)
+        
+        for prob in prob_list:
+            result = process_probability(frac, prob, output_base_path, input_base_path)
+            if result:
+                all_results.append(result)
+    
+    return all_results
+
+if __name__ == "__main__":
+    # Define as frações e probabilidades a serem processadas
+    # Ajuste estas listas conforme necessário
+    frac_list = list(range(5, 101, 5))
+    frac_list = [5,50,100]
+    # Lista de probabilidades - você pode definir ou ler do conf.csv
+    # Aqui estou usando um exemplo, mas você pode querer extrair do conf.csv
+    prob_list = [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
+    
+    # Padrões dos caminhos
+    # input_base_path_pattern = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/MSD_sre_2_src_2_prob_v_frac_v/frac_{frac}"
+    input_base_path_pattern = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/128/MSD_sre_2_src_2_prob_v_frac_v/frac_{frac}"
+    output_base_path_pattern = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/128/{frac}/prob_variation"
+    # output_base_path_pattern = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/expoente/{frac}/prob_variation"
+
+    print(f"{'='*60}")
+    print(f"Calculando expoentes α (MSD ~ t^α) - AJUSTE LOG-LOG")
+    print(f"SRE fixo = {sre}")
+    print(f"Frações: {frac_list}")
+    print(f"Probabilidades: {len(prob_list)} valores")
+    print(f"{'='*60}\n")
+    
+    # Processa todas as combinações (sem paralelismo por simplicidade)
+    # Se quiser paralelismo, pode adicionar depois
+    all_results = process_all_combinations(frac_list, prob_list, input_base_path_pattern, output_base_path_pattern)
     
     if all_results:
         df_summary = pd.DataFrame(all_results)
-        df_summary = df_summary.sort_values('prob')
+        df_summary = df_summary.sort_values(['frac', 'prob'])
         
-        summary_path = Path(output_base_path) / f"resumo_expoentes_frac{frac}_SRE{sre}_logfit.csv"
+        # Salva resumo completo
+        summary_path = Path(output_base_path_pattern.format(frac=frac_list[0])).parent / f"resumo_expoentes_SRE{sre}_logfit.csv"
         df_summary.to_csv(summary_path, index=False)
         
         print(f"\n{'='*60}")
         print("RESUMO FINAL - AJUSTE LOG-LOG")
         print(f"{'='*60}")
-        print(df_summary[['prob', 't_min', 'alpha_mean', 'alpha_std', 'alpha_std_error', 'mean_r_squared', 'n_runs']].to_string(index=False))
+        print(df_summary[['frac', 'prob', 't_min', 'alpha_mean', 'alpha_std', 'alpha_var', 'n_runs']].to_string(index=False))
         
         print(f"\nArquivo salvo em: {summary_path}")
     
     print(f"\n{'='*60}")
     print("PROCESSAMENTO CONCLUÍDO!")
-    print(f"Resultados salvos em: {output_base_path}")

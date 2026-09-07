@@ -9,31 +9,50 @@ import os
 
 # Caminho base onde estão os resultados processados
 # ATENÇÃO: Use o caminho do processamento WEIBULL, não exponencial!
-base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/resultados_fit_weibull_multiplos/prob_v"
+base_path = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_processed/resultados_fit_exponecial_multiplos/prob_v"
 
 # Parâmetros fixos
 sre_fixo = 2
 src_fixo = 2
 
 # Frações a comparar
-fracoes = [25, 50, 100]
+# fracoes = [25, 50, 100]
 
-# Cores e marcadores para cada fração
-cores = {
-    25: 'blue',
-    50: 'green',
-    100: 'red',
-    200: 'purple',
-    300: 'orange'
-}
+# # Cores e marcadores para cada fração
+# cores = {
+#     25: 'blue',
+#     50: 'green',
+#     100: 'red',
+#     200: 'purple',
+#     300: 'orange'
+# }
+# Lista completa de frações
+fracoes = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
 
-marcadores = {
-    25: 'o',
-    50: 's',
-    100: '^',
-    200: 'D',
-    300: 'v'
-}
+# Opção 1: Usar colormap (recomendado para muitas frações)
+cores = {}
+cmap = plt.cm.viridis  # ou 'plasma', 'coolwarm', 'tab20', etc.
+norm = plt.Normalize(min(fracoes), max(fracoes))
+
+for frac in fracoes:
+    cores[frac] = cmap(norm(frac))
+
+# Lista de marcadores disponíveis em matplotlib
+marcadores_lista = ['o', 's', '^', 'v', 'D', 'd', 'p', 'P', '*', 'h', 
+                    'H', 'X', '8', '>', '<', '1', '2', '3', '4', '+']
+
+# Associar cada fração a um marcador
+marcadores = {}
+for i, frac in enumerate(fracoes):
+    marcadores[frac] = marcadores_lista[i % len(marcadores_lista)]
+
+# marcadores = {
+#     25: 'o',
+#     50: 's',
+#     100: '^',
+#     200: 'D',
+#     300: 'v'
+# }
 
 # Pasta para salvar gráficos
 output_dir = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/plot/fit/weibull_prob_v"
@@ -54,7 +73,7 @@ def carregar_dados_fracao(frac):
     Carrega todos os arquivos resumo_tau_beta.csv para uma dada fração
     """
     
-    pasta_base = f"{base_path}"
+    pasta_base = base_path
     dados_combinados = []
     
     if not os.path.exists(pasta_base):
@@ -171,7 +190,8 @@ ax1.set_xlabel('Probabilidade', fontsize=14)
 ax1.set_ylabel('β médio', fontsize=14)
 ax1.set_title(f'β médio vs Probabilidade (WEIBULL - β CALCULADO)\n(SRE={sre_fixo}, SRC={src_fixo})',
               fontsize=14, fontweight='bold')
-ax1.legend(loc='best', fontsize=12)
+#ax1.legend(loc='best', fontsize=12)
+ax1.legend(loc='best', fontsize=12, ncol=4)
 ax1.grid(True, alpha=0.3)
 
 # Ajustar limites
@@ -208,7 +228,8 @@ ax2.set_xlabel('Probabilidade', fontsize=14)
 ax2.set_ylabel('τ médio (tempo característico)', fontsize=14)
 ax2.set_title(f'τ médio vs Probabilidade (WEIBULL)\n(SRE={sre_fixo}, SRC={src_fixo})',
               fontsize=14, fontweight='bold')
-ax2.legend(loc='best', fontsize=12)
+#ax2.legend(loc='best', fontsize=12)
+ax2.legend(loc='best', fontsize=12, ncol=4)
 ax2.grid(True, alpha=0.3)
 
 plt.tight_layout()

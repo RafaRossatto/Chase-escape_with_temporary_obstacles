@@ -38,7 +38,9 @@ int main(int argc, char* argv[]) {
     std::random_device rd;
     
     // Parâmetros
-    std::vector<int> frac_values = {25, 50, 100};
+    //std::vector<int> frac_values = {25, 50, 100};
+    //std::vector<int> frac_values = {25, 50, 100};
+    std::vector<int> frac_values = {5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100};
     int start_run = 1;
     int end_run = 100;
 
@@ -112,7 +114,7 @@ for (int run = start_run; run <= end_run; run++) {
     
     // Diretório de saída
     //std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/v_prob";
-    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/prob_1";
+    std::string path_out = "/media/camafeu/data/rossatto/Chase-escape_with_temporary_obstacles_data/data/data_raw/sre_2_src_2_prob_v_frac_v";
     
     std::ostringstream oss_dir;
     oss_dir << "simulation_frac_" << frac 
