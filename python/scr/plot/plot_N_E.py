@@ -234,7 +234,6 @@ for frac in frac_values:
     plt.xlabel('Probabilidade', fontsize=12)
     plt.ylabel('NE_final / NE_inicial', fontsize=12)
     plt.title(f'NE Final Normalizado vs Probabilidade (frac={frac}%)', fontsize=14, fontweight='bold')
-    plt.axhline(y=1, color='black', linestyle='--', alpha=0.5, label='Valor inicial')
     plt.grid(True, alpha=0.3)
     plt.xticks(df_norm_frac['prob'])
     plt.legend()
